@@ -4,14 +4,21 @@
 (add-to-list 'load-path "~/.emacs.d/evil")
 (require 'evil)
 (evil-leader/set-leader "<SPC>")
+(defun testfun () "a test function" (interactive) (message "sucess"))
 (evil-leader/set-key
+  ;; General emacs functions
   "l" 'windmove-right
   "h" 'windmove-left
   "k" 'windmove-up
   "j" 'windmove-down
   "q" 'kill-this-buffer
   "f" 'find-file
-  "a" 'switch-to-buffer)
+  "a" 'switch-to-buffer
+  ;; Org Mode
+  "<SPC> l" 'org-store-link
+  "<SPC> c" 'org-capture
+  "<SPC> a" 'org-agenda
+  "<SPC> b" 'org-iswitchb)
 (global-evil-leader-mode)
 (evil-mode 1)
 (global-undo-tree-mode)
@@ -25,10 +32,13 @@
 
 ;;; Evil bindings for other modes and packages
 
+;; Info
+(evil-define-key 'normal Info-mode-map
+  (kbd "p") 'Info-prev)
+
 ;; Hooking term mode to emacs state and char mode to allow TUI programs
 (evil-set-initial-state 'term-mode 'emacs)
 (add-hook 'term-mode 'term-char-mode)
-
 
 ;;; Ivy, Swiper and Council, and flx:
 

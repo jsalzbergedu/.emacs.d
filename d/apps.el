@@ -50,5 +50,8 @@
   (when (string= (getenv "XDG_CURRENT_DESKTOP") "stumpwm")
     (setq pop-up-frames t)))
 
-;; Emacsclient
-(server-start)
+;; Org
+(add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
+(setq org-indent-indentation-per-level 1)
+(defun load-org-evil () "A function used to lazily load org-evil" (require 'org-evil))
+(add-hook 'org-mode-hook 'load-org-evil)
