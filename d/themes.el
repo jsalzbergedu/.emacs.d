@@ -10,7 +10,7 @@
 (setq split-height-threshold 0)
 (setq split-width-threshold 1000)
 
-;; If in stumpwm, use pop-up frames and doom-nova, and if in terminal, use black and less-black for background and foreground.
+;; If in stumpwm, use pop-up frames and doom-nova
 ;; Else, use default setting for pop-up frames and use doom-one
 (require 'doom-themes)
 (require 'all-the-icons-dired)
@@ -22,5 +22,6 @@
 
 ;; Set the font when in graphical mode
 (when (display-graphic-p)
-  (progn (set-frame-font "Source Code Pro")
-	 (set-face-attribute 'default nil :height 100)))
+  (progn (set-frame-font "Inconsolata")
+	 (add-to-list 'default-frame-alist '(font-backend . "xft"))
+	 (set-face-attribute 'default nil :height 113)))
