@@ -44,7 +44,7 @@
  '(package-enable-at-startup t)
  '(package-selected-packages
    (quote
-    (org-evil slime stumpwm-mode eclimd eclim js3 ps-ccrypt flx elpy ivy-hydra counsel swiper ivy indent-tools i3wm dired-subtree dired-hacks-utils workgroups2 cargo package-build package-lint toml-mode company-arduino column-marker markdown-mode evil-magit evil-surround with-editor auctex sound-wav chronos magit yatex nhexl-mode js3-mode transpose-frame eww-lnum flycheck-rust flycheck racer company-racer helm use-package evil-leader goto-chg evil pdf-tools rust-mode neotree nlinum paradox all-the-icons-dired doom-themes ##)))
+    (ensime org-evil slime stumpwm-mode eclimd eclim js3 ps-ccrypt flx elpy ivy-hydra counsel swiper ivy indent-tools i3wm dired-subtree dired-hacks-utils workgroups2 cargo package-build package-lint toml-mode company-arduino column-marker markdown-mode evil-magit evil-surround with-editor auctex sound-wav chronos magit yatex nhexl-mode js3-mode transpose-frame eww-lnum flycheck-rust flycheck racer company-racer helm use-package evil-leader goto-chg evil pdf-tools rust-mode neotree nlinum paradox all-the-icons-dired doom-themes ##)))
  '(rdxmk-lockfile-no-pollute t)
  '(scroll-bar-mode nil)
  '(tool-bar-mode nil)
@@ -76,6 +76,10 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(default ((t nil)))
+ '(bold ((t (:weight bold :foundry "CYRE" :family "Inconsolata"))))
+ '(bold-italic ((t (:inherit (bold italic) :family "Inconsolata LGC"))))
+ '(font-lock-comment-face ((t (:foreground "#899BA6" :foundry "PfEd" :family "Inconsolata"))))
+ '(italic ((t (:slant italic :foundry "PfEd" :family "Inconsolata LGC"))))
  '(org-level-1 ((t (:background "#3C4C55" :foreground "#83AFE5" :weight bold :height 1.2)))))
 
 (find-file-noselect "~/.emacs.d/.emacs") ;; I have ~/.emacs.d/.emacs softlinked to ~/.emacs

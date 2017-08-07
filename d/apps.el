@@ -55,3 +55,8 @@
 (setq org-indent-indentation-per-level 1)
 (defun load-org-evil () "A function used to lazily load org-evil" (require 'org-evil))
 (add-hook 'org-mode-hook 'load-org-evil)
+
+;; Tramp
+(setq tramp-auto-save-directory "~/.emacs.d/tramp-auto-saves")
+(add-to-list 'backup-directory-alist
+	     (cons tramp-file-name-regexp nil))

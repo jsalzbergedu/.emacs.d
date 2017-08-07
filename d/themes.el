@@ -21,7 +21,5 @@
     (load-theme 'doom-one t)))
 
 ;; Set the font when in graphical mode
-(when (display-graphic-p)
-  (progn (set-frame-font "Inconsolata")
-	 (add-to-list 'default-frame-alist '(font-backend . "xft"))
-	 (set-face-attribute 'default nil :height 113)))
+(set-face-attribute 'default nil :height 113 :family "Inconsolata" :foundry "PfEd")
+(add-to-list 'default-frame-alist '(font-backend . "xft"))
