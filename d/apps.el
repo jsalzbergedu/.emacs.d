@@ -2,6 +2,7 @@
 
 ;; Magit
 (use-package magit
+  :defines magit
   :defer t
   :config (require 'evil-magit))
 
@@ -45,9 +46,12 @@
 (use-package stumpwm-mode
   :defer t
   :init (progn (autoload 'stumpwm-mode "stumpwm-mode" nil t)
-	       (setq stumpwm-shell-program (concat (getenv "HOME") "/.stumpwm.d/stumpwm-contrib/util/stumpish/stumpish"))))
+	       (when (file-exists-p "~/.stumpwm.d/stumpwm-contrib/util/stumpish/stumpish")
+	       (setq stumpwm-shell-program (concat (getenv "HOME") "/.stumpwm.d/stumpwm-contrib/util/stumpish/stumpish")))))
 
-(require 'stumpwm-utils "/home/jacob/AUR/stumpwm-contrib/util/swm-emacs/stumpwm-utils")
+(when (file-exists-p "~/.stumpwm.d/stumpwm-contrib/util/swm-emacs/stumpwm-utils")
+  (require 'stumpwm-utils "/home/jacob/.stumpwm.d/stumpwm-contrib/util/swm-emacs/stumpwm-utils"))
+
 (when (getenv "XDG_CURRENT_DEKSTOP") ;; - set pop up frames to t when the window manager is stumpwm
   (when (string= (getenv "XDG_CURRENT_DESKTOP") "stumpwm")
     (setq pop-up-frames t)))

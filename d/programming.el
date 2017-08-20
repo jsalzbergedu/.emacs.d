@@ -56,7 +56,7 @@
       (insert " mut"))))
 
 ;; Redox:
-(if (file-exists-p "~/.emacs.d/rdxmk/") (progn (add-to-list 'load-path "~/.emacs.d/rdxmk/")
+(when (file-exists-p "~/.emacs.d/rdxmk/") (progn (add-to-list 'load-path "~/.emacs.d/rdxmk/")
 					       (require 'rdxmk)))
 
 ;; Toml:
