@@ -14,24 +14,12 @@
 (use-package js3
   :defer t)
 
-;; Elisp:
-(require 'cl)
-(add-hook 'emacs-lisp-mode 'linum-mode)
 
 ;; Java:
-(add-to-list 'load-path "~/.emacs.d/emacs-eclim/")
-(use-package eclim
-  :defer t
-  :config (progn (global-eclim-mode)))
-(use-package eclimd
-  :defer t
-  :config (progn (require 'company-emacs-eclim)
-		 (company-emacs-eclim-setup)
-		 (evil-set-initial-state 'eclim-project-mode 'emacs)
-		 (defun eclimd-wkspace ()
-		   "My convenience function for starting eclimd with a set workspace."
-		   (interactive)
-		   (start-eclimd "~/workspace/"))))
+
+;; Elisp:
+(require 'cl-lib)
+(add-hook 'emacs-lisp-mode 'nlinum-mode)
 
 ;; Common Lisp:
 (add-to-list 'load-path "/usr/share/emacs/site-lisp/slime/")
@@ -42,6 +30,11 @@
 		 (add-to-list 'slime-contribs 'slime-fancy)
 		 (load (expand-file-name "/usr/lib/quicklisp/slime-helper.el"))
 		 (setq inferior-lisp-program "/usr/bin/sbcl")))
+
+;; Scheme
+(setq scheme-program-name "csi -:c")
+(use-package geiser)
+(use-package scheme-complete)
 
 ;; Rust:
 (use-package rust-mode
@@ -63,8 +56,8 @@
       (insert " mut"))))
 
 ;; Redox:
-(add-to-list 'load-path "~/.emacs.d/rdxmk/")
-(require 'rdxmk)
+(if (file-exists-p "~/.emacs.d/rdxmk/") (progn (add-to-list 'load-path "~/.emacs.d/rdxmk/")
+					       (require 'rdxmk)))
 
 ;; Toml:
 (require 'toml-mode)
@@ -72,10 +65,14 @@
 ;; TeX:
 
 ;; HTML:
-(add-hook 'sgml-mode-hook 'linum-mode)
+(add-hook 'sgml-mode-hook 'nlinum-mode)
+
+;; Markdown
+(setq markdown-command "/usr/bin/pandoc")
 
 ;; Relevant to all after setup:
 (global-company-mode t)
-(add-hook 'prog-mode-hook 'linum-mode)
+(add-hook 'prog-mode-hook 'nlinum-mode)
 (use-package indent-tools
   :bind ("C-c i" . indent-tools-hydra/body))
+(setq nlinum-format "%4d │ ")

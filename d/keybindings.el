@@ -4,7 +4,6 @@
 (add-to-list 'load-path "~/.emacs.d/evil")
 (require 'evil)
 (evil-leader/set-leader "<SPC>")
-(defun testfun () "a test function" (interactive) (message "sucess"))
 (evil-leader/set-key
   ;; General emacs functions
   "l" 'windmove-right
@@ -20,6 +19,10 @@
   "<SPC> a" 'org-agenda
   "<SPC> b" 'org-iswitchb)
 (global-evil-leader-mode)
+(evil-leader/set-key-for-mode 'emacs-lisp-mode-hook (kbd "e") 'eval-region)
+(evil-leader/set-key-for-mode 'slime-lisp-mode-hook (kbd "e") 'slime-eval-region)
+(add-hook 'doc-view-minor-mode-hook (lambda () "Set k to up in docview" (local-set-key (kbd "k") 'doc-view-previous-line-or-previous-page)))
+(add-hook 'doc-view-minor-mode-hook (lambda () "Set j to down in docview" (local-set-key (kbd "j") 'doc-view-next-line-or-next-page)))
 (evil-mode 1)
 (global-undo-tree-mode)
 (setq evil-normal-state-modes (append evil-motion-state-modes evil-normal-state-modes))
@@ -67,6 +70,7 @@
 ;;; Other keybindings
 
 ;; Mouse scroll through buffers:
+(setq mouse-wheel-scroll-amount (quote (0 ((shift) . 1) ((control)))))
 (defun mwheel-scroll (event)
   "Scroll up or down according to the EVENT.
 This should be bound only to mouse buttons 4 and 5 on non-Windows

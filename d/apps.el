@@ -11,7 +11,9 @@
   :config (progn (evil-set-initial-state 'chronos-mode 'emacs)
 		 (setq chronos-expiry-functions '(chronos-buffer-notify
 						  chronos-desktop-notifications-notify
-						  chronos-sound-notify)))
+						  chronos-sound-notify))
+		 chronos-notification-wav "~/Music/echoed-ding.wav"
+		 chronos-shell-notify-program "mplayer -ao pulse /home/jacob/Music/echoed-ding.ogg")
   :bind (("C-c t t" . chronos-add-timer)))
 
 ;; Dired-subtree
@@ -36,8 +38,8 @@
 						(define-key evil-normal-state-local-map (kbd "RET") 'neotree-enter)))))
 
 ;; Ccrypt
-(setq load-path (cons "/usr/local/share/emacs/site-lisp/" load-path))
-(require 'ps-ccrypt "~/.emacs.d/ps-ccrypt.el") ;; It is not available online.
+(if (file-exists-p "~/.emacs.d/ps-ccrypt/ps-ccrypt.el")
+    (require 'ps-ccrypt "~/.emacs.d/ps-ccrypt/ps-ccrypt"))
 
 ;; Stumpwm
 (use-package stumpwm-mode
@@ -55,8 +57,20 @@
 (setq org-indent-indentation-per-level 1)
 (defun load-org-evil () "A function used to lazily load org-evil" (require 'org-evil))
 (add-hook 'org-mode-hook 'load-org-evil)
+(setq 
+ org-ellipsis "  "
+ org-fontify-done-headline t
+ org-fontify-quote-and-verse-blocks t
+ org-fontify-whole-heading-line t
+ org-startup-indented t)
 
 ;; Tramp
 (setq tramp-auto-save-directory "~/.emacs.d/tramp-auto-saves")
 (add-to-list 'backup-directory-alist
 	     (cons tramp-file-name-regexp nil))
+
+;; Doc View
+(doc-view-minor-mode 1)
+(setq
+ doc-view-continuous t
+ doc-view-resolution 200)
