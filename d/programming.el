@@ -28,7 +28,10 @@
   :defer t
   :config (progn (require 'cl)
 		 (add-to-list 'slime-contribs 'slime-fancy)
+		 (if (file-exists-p (expand-file-name "/usr/lib/quicklisp/slime-helper.el"))
 		 (load (expand-file-name "/usr/lib/quicklisp/slime-helper.el"))
+		 (when (file-exists-p (expand-file-name "~/quicklisp/slime-helper.el"))
+		   (load (expand-file-name "~/quicklisp/slime-helper.el"))))
 		 (setq inferior-lisp-program "/usr/bin/sbcl")))
 
 ;; Scheme
@@ -74,6 +77,6 @@
 (global-company-mode t)
 (add-hook 'prog-mode-hook 'nlinum-mode)
 (use-package indent-tools
-  :config
-  (bind-"C-c i" . indent-tools-hydra/body))
+  :load-path "indent-tools"
+  :init (global-set-key (kbd "C-c i") 'indent-tools/hydra-body))
 (setq nlinum-format "%4d │ ")

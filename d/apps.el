@@ -15,7 +15,7 @@
 						  chronos-sound-notify))
 		 chronos-notification-wav "~/Music/echoed-ding.wav"
 		 chronos-shell-notify-program "mplayer -ao pulse /home/jacob/Music/echoed-ding.ogg")
-  :bind (("C-c t t" . chronos-add-timer)))
+  :init (global-set-key (kbd "C-c t t")  'chronos-add-timer))
 
 ;; Dired-subtree
 (use-package dired-subtree
