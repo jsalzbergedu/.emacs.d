@@ -1,7 +1,7 @@
 ;; Initialize package, the package manager of emacs
 (package-initialize)
 ;; Load use-package, a lazy loader and configurer for packages
-(require 'use-package)
+;;(require 'use-package)
 (load "~/.emacs.d/d/themes")
 (load "~/.emacs.d/d/keybindings")
 (load "~/.emacs.d/d/programming")

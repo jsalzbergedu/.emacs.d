@@ -1,3 +1,6 @@
 [submodule "Inconsolata-LGC"]
 	path = Inconsolata-LGC
 	url = https://github.com/samposm/Inconsolata-LGC.git
+[submodule "indent-tools"]
+	path = indent-tools
+	url = https://gitlab.com/emacs-stuff/indent-tools.git

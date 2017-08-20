@@ -74,5 +74,6 @@
 (global-company-mode t)
 (add-hook 'prog-mode-hook 'nlinum-mode)
 (use-package indent-tools
-  :bind ("C-c i" . indent-tools-hydra/body))
+  :config
+  (bind-"C-c i" . indent-tools-hydra/body))
 (setq nlinum-format "%4d │ ")

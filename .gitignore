@@ -6,6 +6,8 @@
 !/d/*
 !/Inconsolata-LGC
 !/Inconsolata-LGC/*
+!/indent-tools
+!/indent-tools/*
 **~
 **#*#
 !.emacs
