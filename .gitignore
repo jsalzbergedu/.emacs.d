@@ -10,6 +10,8 @@
 !.emacs
 !.gitignore
 !README.md
+!/ps-ccrypt
+!/ps-ccrypt/*
 **~
 **#*#
 **.elc
