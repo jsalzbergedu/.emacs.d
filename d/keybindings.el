@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t -*-
 ;;; Evil
 (require 'evil-leader)
 (global-evil-leader-mode)
@@ -12,39 +13,22 @@
   "j" 'windmove-down
   "q" 'kill-this-buffer
   "f" 'find-file
-  "a" 'switch-to-buffer
-  ;; Org Mode
-  "<SPC> l" 'org-store-link
-  "<SPC> c" 'org-capture
-  "<SPC> a" 'org-agenda
-  "<SPC> b" 'org-iswitchb)
+  "a" 'switch-to-buffer)
 (global-evil-leader-mode)
-(evil-leader/set-key-for-mode 'emacs-lisp-mode-hook (kbd "e") 'eval-region)
-(evil-leader/set-key-for-mode 'slime-lisp-mode-hook (kbd "e") 'slime-eval-region)
-(add-hook 'doc-view-minor-mode-hook (lambda () "Set k to up in docview" (local-set-key (kbd "k") 'doc-view-previous-line-or-previous-page)))
-(add-hook 'doc-view-minor-mode-hook (lambda () "Set j to down in docview" (local-set-key (kbd "j") 'doc-view-next-line-or-next-page)))
-(evil-mode 1)
-(global-undo-tree-mode)
-(setq evil-normal-state-modes (append evil-motion-state-modes evil-normal-state-modes))
-(setq evil-motion-state-modes nil)
-(use-package evil-surround
-  :defer t
-  :config (global-evil-surround-mode 1))
-(require 'evil-surround)
-(global-evil-surround-mode 1)
-
+(add-to-list 'finalize (lambda ()
+			  "Initialize evil last to allow evil-leader to be used throught the config"
+			  (evil-mode 1)
+			  (global-undo-tree-mode)
+			  (setq evil-normal-state-modes (append evil-motion-state-modes evil-normal-state-modes))
+			  (setq evil-motion-state-modes nil)
+			  (use-package evil-surround
+			    :defer t
+			    :config (global-evil-surround-mode 1))
+			  (require 'evil-surround)
+			  (global-evil-surround-mode 1)))
 ;;; Evil bindings for other modes and packages
 
-;; Info
-(evil-define-key 'normal Info-mode-map
-  (kbd "p") 'Info-prev)
-
-;; Hooking term mode to emacs state and char mode to allow TUI programs
-(evil-set-initial-state 'term-mode 'emacs)
-(add-hook 'term-mode 'term-char-mode)
-
 ;;; Ivy, Swiper and Council, and flx:
-
 (require 'flx)
 (require 'ivy)
 (setq ivy-re-builders-alist
@@ -84,7 +68,3 @@ systems."
 
 ;; q in evil:
 (global-set-key (kbd "C-c a q") 'quit-window)
-
-
-;; Bind `C-c g` to the backtick character
-(global-set-key (kbd "C-c g") (kbd "`"))

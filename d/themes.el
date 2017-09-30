@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t -*-
 ;;; Themes
 
 ;; Clean up all the unnecessary visual elements
@@ -32,7 +33,12 @@
 (add-to-list 'default-frame-alist '(font-backend . "xft"))
 
 ;; Set a fallback font to make the box-building characters look right
-(set-fontset-font "fontset-default" '(#x2502 . #x2502) "Inconsolata")
+(defun fix-box-building (&optional frame)
+  "Sets a fallback font to make the box-building characters look right"
+  (set-fontset-font "fontset-default" '(#x2502 . #x2502) "Fira Mono" frame)
+  (redisplay t))
+(add-hook 'after-make-frame-functions 'fix-box-building)
+(add-hook 'window-setup-hook 'fix-box-building)
 
 ;; Set colors
 (setq ansi-color-names-vector
@@ -63,3 +69,33 @@
        (cons 340 "#5B6268")
        (cons 360 "#5B6268"))
       vc-annotate-very-old-color nil)
+
+;; Make modeline look better
+(set-face-attribute 'modeline-inactive nil :background "#3c4c55" :foreground "#899ba6")
+
+;; Prettify symbols
+(use-package prettify-utils.el
+  :load-path "prettify-utils.el/"
+  :demand t
+  :config (add-hook 'prettify-symbols-mode-hook '(lambda ()
+						      "Sets the list of symbols"
+						      (setq prettify-symbols-alist
+							    (prettify-utils-generate
+							     ("lambda" "λ")
+							     ("delta" "∆")
+							     ("nu" "𝜈")
+							     ("Reals" "ℝ")
+							     ("reals" "ℝ")
+							     ("<="     "≤")
+							     (">="     "≥")
+							     ("pi" "𝜋")
+							     ("->"     "→ "))))))
+;; I know the following is ugly but the hook for prettify symbols wasn't working from the global one
+(defun prettify-symbols-mode1 () "Sets prettify symbols mode to 1 in the graphical mode"
+       (if (window-system) (prettify-symbols-mode 1)
+	 (prettify-symbols-mode -1)))
+(add-hook 'prog-mode-hook 'prettify-symbols-mode1)
+(add-hook 'lisp-mode-hook 'prettify-symbols-mode1)
+(add-hook 'sgml-mode-hook 'prettify-symbols-mode1)
+(add-hook 'emacs-lisp-mode-hook 'prettify-symbols-mode1)
+(add-hook 'scheme-mode-hook 'prettify-symbols-mode1)

@@ -1,7 +1,9 @@
+;; -*- lexical-binding: t -*-
 ;; Initialize package, the package manager of emacs
 (package-initialize)
 ;; Load use-package, a lazy loader and configurer for packages
 ;;(require 'use-package)
+(defvar finalize (list) "A list of functions called after emacs initializes")
 (load "~/.emacs.d/d/themes")
 (load "~/.emacs.d/d/keybindings")
 (load "~/.emacs.d/d/programming")
@@ -10,6 +12,7 @@
  package-archives
    (quote
     (("melpa" . "http://melpa.org/packages/")
+     ("melpa-stable" . "https://stable.melpa.org/packages/")
      ("gnu" . "http://elpa.gnu.org/packages/")
      ("all-the-icons" . "~/AUR/all-the-icons.el/")))
  package-enable-at-startup t
@@ -23,7 +26,9 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- )
+ '(package-selected-packages
+   (quote
+    (json-mode ag meson-mode cmake-mode company-rtags noflet toml paredit scheme-complete geiser ensime org-evil slime stumpwm-mode eclimd js3 ps-ccrypt flx elpy ivy-hydra counsel swiper ivy indent-tools i3wm dired-subtree dired-hacks-utils workgroups2 cargo package-build package-lint toml-mode company-arduino column-marker markdown-mode evil-magit evil-surround with-editor auctex sound-wav chronos magit yatex nhexl-mode js3-mode transpose-frame eww-lnum flycheck-rust flycheck racer company-racer helm use-package evil-leader goto-chg evil pdf-tools rust-mode neotree nlinum paradox all-the-icons-dired doom-themes ##))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -37,5 +42,7 @@
  '(org-level-1 ((t (:background "#3C4C55" :foreground "#83AFE5" :weight bold :height 1.2)))))
 
 (find-file-noselect "~/.emacs.d/init.el") ;; I have ~/.emacs.d/.emacs softlinked to ~/.emacs
+(with-eval-after-load 'init.el (mapc 'funcall finalize))
 (provide 'init.el)
 ;;; init.el ends here
+(put 'upcase-region 'disabled nil)

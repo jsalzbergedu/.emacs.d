@@ -1,8 +1,8 @@
+;; -*- lexical-binding: t -*-
 ;;; Applications in Emacs
 
 ;; Magit
 (use-package magit
-  :defines magit
   :defer t
   :config (require 'evil-magit))
 
@@ -62,11 +62,19 @@
 (defun load-org-evil () "A function used to lazily load org-evil" (require 'org-evil))
 (add-hook 'org-mode-hook 'load-org-evil)
 (setq 
- org-ellipsis "  "
+ org-ellipsis ":"
  org-fontify-done-headline t
  org-fontify-quote-and-verse-blocks t
  org-fontify-whole-heading-line t
  org-startup-indented t)
+(evil-leader/set-key
+  ;; Org Mode
+  "<SPC> l" 'org-store-link
+  "<SPC> c" 'org-capture
+  "<SPC> a" 'org-agenda
+  "<SPC> b" 'org-iswitchb)
+(find-file-noselect "~/tmp/mathscratchpad.org")
+
 
 ;; Tramp
 (setq tramp-auto-save-directory "~/.emacs.d/tramp-auto-saves")
@@ -74,7 +82,21 @@
 	     (cons tramp-file-name-regexp nil))
 
 ;; Doc View
-(doc-view-minor-mode 1)
+(add-to-list 'auto-mode-alist '("\\.pdf\\'" . doc-view-right-keys))
 (setq
  doc-view-continuous t
  doc-view-resolution 200)
+(defun doc-view-right-keys ()
+  "Binds k to up and j to down in docview"
+  (doc-view-mode)
+  (local-set-key (kbd "q") 'image-kill-buffer)
+  (local-set-key (kbd "k") 'doc-view-previous-line-or-previous-page)
+  (local-set-key (kbd "j") 'doc-view-next-line-or-next-page))
+
+;; Info
+(evil-define-key 'normal Info-mode-map
+  (kbd "p") 'Info-prev)
+
+;; Silver Searcher
+(use-package ag
+  :defer t)

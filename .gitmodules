@@ -4,3 +4,6 @@
 [submodule "indent-tools"]
 	path = indent-tools
 	url = https://gitlab.com/emacs-stuff/indent-tools.git
+[submodule "prettify-utils.el"]
+	path = prettify-utils.el
+	url = https://github.com/Ilazki/prettify-utils.el.git
