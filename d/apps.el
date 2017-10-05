@@ -28,11 +28,14 @@
 
 
 ;; Neotree
+(use-package all-the-icons)
+(set-face-attribute 'vertical-border nil :foreground "#899ba6") 
 (use-package neotree
   :defer t
   :config (progn (global-set-key [f8] 'neotree-toggle)
 		 (doom-themes-neotree-config)
 		 (add-hook 'neotree-mode-hook (lambda ()
+						(setq neo-window-width 30)
 						(define-key evil-normal-state-local-map (kbd "TAB") 'neotree-enter)
 					        (define-key evil-normal-state-local-map (kbd "SPC") 'neotree-enter)
 						(define-key evil-normal-state-local-map (kbd "q") 'neotree-hide)
@@ -81,17 +84,20 @@
 (add-to-list 'backup-directory-alist
 	     (cons tramp-file-name-regexp nil))
 
-;; Doc View
-(add-to-list 'auto-mode-alist '("\\.pdf\\'" . doc-view-right-keys))
+;; PDF tools
+(pdf-tools-install)
 (setq
- doc-view-continuous t
- doc-view-resolution 200)
-(defun doc-view-right-keys ()
-  "Binds k to up and j to down in docview"
-  (doc-view-mode)
-  (local-set-key (kbd "q") 'image-kill-buffer)
-  (local-set-key (kbd "k") 'doc-view-previous-line-or-previous-page)
-  (local-set-key (kbd "j") 'doc-view-next-line-or-next-page))
+ pdf-view-continuous t
+ pdf-view-display-size :fit-page)
+(add-hook 'pdf-view-mode-hook
+	  (lambda ()
+	    (local-set-key (kbd "q") 'image-kill-buffer)
+	    (local-set-key (kbd "h") 'pdf-view-previous-page)
+	    (local-set-key (kbd "l") 'pdf-view-next-page)
+	    (local-unset-key (kbd "<SPC>"))
+	    (local-set-key (kbd "a a") 'ivy-switch-buffer)
+	    (local-set-key (kbd "j") 'pdf-view-next-line-or-next-page)
+	    (local-set-key (kbd "k") 'pdf-view-previous-line-or-previous-page)))
 
 ;; Info
 (evil-define-key 'normal Info-mode-map
@@ -100,3 +106,71 @@
 ;; Silver Searcher
 (use-package ag
   :defer t)
+
+;; mu4e setup taken from http://cachestocaches.com/2017/3/complete-guide-email-emacs-using-mu-and-/
+(use-package mu4e
+  :load-path "/usr/share/emacs/site-lisp/mu4e/"
+  :config (setq user-mail-address "jssalzbe@ncsu.edu"
+		  smtpmail-smtp-user "jssalzbe@ncsu.edu"
+		  smtpmail-local-domain "gmail.com"
+		  smtpmail-default-smtp-server "smtp.gmail.com"
+		  smtpmail-smtp-server "smtp.gmail.com"
+		  smtpmail-smtp-service 587
+		  mu4e-contexts `( ,(make-mu4e-context
+				     :name "Gmail"
+				     :match-func (lambda (msg) (when msg
+							    (string-prefix-p "/Gmail" (mu4e-message-field msg :maildir))))
+				     :vars '((mu4e-trash-folder . "/Gmail/[Gmail].Trash")
+					     (mu4e-refile-folder . "/Gmail/[Gmail].Archive"))))))
+
+(defun advised-mu4e-headers-view-message (orig-fun)
+  "View message at point.
+If there's an existing window for the view, re-use that one. If
+not, create a new one, depending on the value of
+`mu4e-split-view': if it's a symbol `horizontal' or `vertical',
+split the window accordingly; if it is nil, replace the current
+window. "
+  (interactive)
+  (unless (eq major-mode 'mu4e-headers-mode)
+    (mu4e-error "Must be in mu4e-headers-mode (%S)" major-mode))
+  (let* ((msg (mu4e-message-at-point))
+	  (docid (or (mu4e-message-field msg :docid)
+		   (mu4e-warn "No message at point")))
+	  ;; decrypt (or not), based on `mu4e-decryption-policy'.
+	  (decrypt
+	    (and (member 'encrypted (mu4e-message-field msg :flags))
+	      (if (eq mu4e-decryption-policy 'ask)
+		(yes-or-no-p (mu4e-format "Decrypt message?"))
+		mu4e-decryption-policy)))
+					;(viewwin (mu4e~headers-redraw-get-view-window)))
+	  )
+    ;(unless (window-live-p viewwin)
+    ;  (mu4e-error "Cannot get a message view"))
+    ;(select-window viewwin)
+    ;(switch-to-buffer (mu4e~headers-get-loading-buf))
+    (mu4e~proc-view docid mu4e-view-show-images decrypt)
+    (when (boundp 'mu4e~view-buffer)
+      (ignore-errors (make-indirect-buffer mu4e~view-buffer "*mu4e-view-all*"))))
+  )
+
+(advice-add 'mu4e-headers-view-message :around #'advised-mu4e-headers-view-message)
+(defun switch-to-buffer-just-work ()
+  "This gosh darn thing just needs to work"
+  (interactive)
+  (switch-to-buffer "*mu4e-headers*"))
+(advice-add 'mu4e-headers-view-message :after #'(lambda () (call-interactively 'switch-to-buffer-just-work)))
+
+
+
+(use-package evil-mu4e)
+;; ERC irc client
+(setq erc-autojoin-channels-alist (list (cons "freenode.net" (list "#stratis-storage" "#scheme")) (cons "mozilla.org" (list "#rust" "#rust-beginners" "#servo"))))
+(setq erc-prompt (concat "<jcob>:"))
+(defun my-erc-connect () 
+  "Connect to the IRC servers I usually connect to"
+  (interactive)
+  (erc :server "irc.freenode.net" :port 6667 :nick "jcob" :full-name "Jacob Salzberg")
+  (erc :server "irc.mozilla.org" :port 6667 :nick "jcob" :full-name "Jacob Salzberg"))
+
+;; Term
+(use-package term+)

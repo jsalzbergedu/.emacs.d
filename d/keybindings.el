@@ -5,12 +5,56 @@
 (add-to-list 'load-path "~/.emacs.d/evil")
 (require 'evil)
 (evil-leader/set-leader "<SPC>")
+
+;; Either move across emacs windows or stumpwm windows
+(defun windmove-plain (dir)
+  "Moves window focus in direction DIR"
+  (interactive "sDIR: ")
+  (cond
+   ((string= "up" dir) (windmove-up))
+   ((string= "down" dir) (windmove-down))
+   ((string= "left" dir) (windmove-left))
+   ((windmove-right) t)
+   (t nil)))
+
+(defun stump-move (dir)
+  "Move stumpwm focus in direction DIR"
+  (interactive "sDIR: ")
+  (make-process :name "windmove" :buffer nil :command (list "~/.stumpwm.d/stumpwm-contrib/util/stumpish/stumpish" (concat "move-focus " dir))))
+
+
+(defun windmove-or-change-focus (dir)
+  "Windmoves or moves stumpwms focus in direction DIR"
+  (interactive "sDIR: ")
+  (unless (ignore-errors (windmove-plain dir))
+    (stump-move dir)))
+
+(defun windmove-cf-right ()
+  (interactive)
+  "Move or window or stumpwm focus right"
+  (windmove-or-change-focus "right"))
+
+(defun windmove-cf-left ()
+  (interactive)
+  "Move or window or stumpwm focus left"
+  (windmove-or-change-focus "left"))
+
+(defun windmove-cf-up ()
+  (interactive)
+  "Move or window or stumpwm focus up"
+  (windmove-or-change-focus "up"))
+
+(defun windmove-cf-down ()
+  (interactive)
+  "Move or window or stumpwm focus down"
+  (windmove-or-change-focus "down"))
+
 (evil-leader/set-key
   ;; General emacs functions
-  "l" 'windmove-right
-  "h" 'windmove-left
-  "k" 'windmove-up
-  "j" 'windmove-down
+  "l" 'windmove-cf-right
+  "h" 'windmove-cf-left
+  "k" 'windmove-cf-up
+  "j" 'windmove-cf-down
   "q" 'kill-this-buffer
   "f" 'find-file
   "a" 'switch-to-buffer)

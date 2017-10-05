@@ -54,6 +54,7 @@
 (setq scheme-program-name "csi -:c")
 (use-package scheme-complete)
 (use-package geiser)
+(setq geiser-active-implementations '(chicken))
 (add-hook 'scheme-mode-hook 'geiser-mode)
 
 ;; Rust:

@@ -1,0 +1,20 @@
+[general]
+accounts = Gmail
+maxsyncaccounts = 2
+
+[Account Gmail]
+localrepository = LocalGmail
+remoterepository = RepositoryGmail
+autorefresh = 5
+quick = 10
+postsynchook = mu index --maildir ~/Maildir
+
+[Repository LocalGmail]
+type = Maildir
+localfolders = ~/Maildir/Gmail
+
+[Repository RepositoryGmail]
+type = Gmail
+maxconnections = 2
+sslcacertfile = /etc/ssl/certs/ca-certificates.crt
+include(`./gpassusr')

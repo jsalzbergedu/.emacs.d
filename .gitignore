@@ -17,6 +17,7 @@
 !/ps-ccrypt/*
 !/prettify-utils.el
 !/prettify-utils.el/*
+!offlineimaprcsrc
 **~
 **#*#
 **.elc

@@ -70,8 +70,49 @@
        (cons 360 "#5B6268"))
       vc-annotate-very-old-color nil)
 
-;; Make modeline look better
-(set-face-attribute 'modeline-inactive nil :background "#3c4c55" :foreground "#899ba6")
+;; Make mode-line look better
+(set-face-attribute 'mode-line-inactive nil :background "#3c4c55" :foreground "#899ba6")
+(set-face-attribute 'mode-line nil :background "#3c4b53 ")
+
+;; Hide mode line
+(defvar mode-line-storage nil)
+(make-variable-buffer-local 'mode-line-storage)
+
+(defun toggle-mode-line-off ()
+  "Toggles the mode line off"
+  (setq mode-line-storage mode-line-format)
+  (setq mode-line-format nil))
+
+(defun toggle-mode-line-toggler ()
+  "Toggles the mode-line"
+  (if mode-line-format
+      (toggle-mode-line-off)
+    (setq mode-line-format mode-line-storage)
+    (setq mode-line-storage nil))) 
+
+(defun toggle-mode-line (&optional arg)
+  "Stores the current mode-line-format in nil, toggles the mode-line.
+If called with a negative argument, simply disable the mode-line."
+  (interactive)
+  (if arg
+      (if (> arg 0)
+	  (toggle-mode-line-toggler)
+	(when mode-line-format (toggle-mode-line-off)))
+    (toggle-mode-line-toggler)))
+
+(evil-leader/set-key "m" 'toggle-mode-line)
+
+(define-minor-mode hide-mode-line
+  "A mode to hide the mode-line"
+  nil
+  nil
+  nil)
+
+(define-globalized-minor-mode global-hide-mode-line
+  hide-mode-line
+  (lambda () "Turn off mode line" (toggle-mode-line -1)))
+
+(global-hide-mode-line 1)
 
 ;; Prettify symbols
 (use-package prettify-utils.el
@@ -90,6 +131,7 @@
 							     (">="     "≥")
 							     ("pi" "𝜋")
 							     ("->"     "→ "))))))
+
 ;; I know the following is ugly but the hook for prettify symbols wasn't working from the global one
 (defun prettify-symbols-mode1 () "Sets prettify symbols mode to 1 in the graphical mode"
        (if (window-system) (prettify-symbols-mode 1)
@@ -99,3 +141,5 @@
 (add-hook 'sgml-mode-hook 'prettify-symbols-mode1)
 (add-hook 'emacs-lisp-mode-hook 'prettify-symbols-mode1)
 (add-hook 'scheme-mode-hook 'prettify-symbols-mode1)
+(add-hook 'c-mode-hook 'prettify-symbols-mode1)
+(add-hook 'c++-mode-hook 'prettify-symbols-mode1)
