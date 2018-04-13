@@ -20,13 +20,17 @@
 
 ;; If in stumpwm, use pop-up frames and doom-nova
 ;; Else, use default setting for pop-up frames and use doom-one
-(require 'doom-themes)
-(require 'all-the-icons-dired)
-(when (getenv "XDG_SESSION_DESKTOP")
-  (if (string= (getenv "XDG_SESSION_DESKTOP") "stumpwm")
-      (progn (setq pop-up-frames t)
-	     (load-theme 'doom-nova t))
-    (load-theme 'doom-one t)))
+;;(require 'doom-themes)
+;; (require 'all-the-icons-dired)
+;; (when (getenv "xdg_session_desktop")
+;;   (if (string= (getenv "xdg_session_desktop") "stumpwm")
+;;       (progn (setq pop-up-frames t)
+;; 	     (load-theme 'doom-nova t))
+;;     (load-theme 'doom-one t)))
+
+(use-package flatui-theme
+  :demand t
+  :config (load-theme 'flatui t))
 
 ;; Set the font when in graphical mode
 (set-face-attribute 'default nil :height 113 :family "Inconsolata" :foundry "PfEd")
@@ -74,72 +78,43 @@
 (set-face-attribute 'mode-line-inactive nil :background "#3c4c55" :foreground "#899ba6")
 (set-face-attribute 'mode-line nil :background "#3c4b53 ")
 
-;; Hide mode line
-(defvar mode-line-storage nil)
-(make-variable-buffer-local 'mode-line-storage)
+;; ;; Hide mode line
+;; (defvar mode-line-storage nil)
+;; (make-variable-buffer-local 'mode-line-storage)
 
-(defun toggle-mode-line-off ()
-  "Toggles the mode line off"
-  (setq mode-line-storage mode-line-format)
-  (setq mode-line-format nil))
+;; (defun toggle-mode-line-off ()
+;;   "Toggles the mode line off"
+;;   (setq mode-line-storage mode-line-format)
+;;   (setq mode-line-format nil))
 
-(defun toggle-mode-line-toggler ()
-  "Toggles the mode-line"
-  (if mode-line-format
-      (toggle-mode-line-off)
-    (setq mode-line-format mode-line-storage)
-    (setq mode-line-storage nil))) 
+;; (defun toggle-mode-line-toggler ()
+;;   "Toggles the mode-line"
+;;   (if mode-line-format
+;;       (toggle-mode-line-off)
+;;     (setq mode-line-format mode-line-storage)
+;;     (setq mode-line-storage nil))) 
 
-(defun toggle-mode-line (&optional arg)
-  "Stores the current mode-line-format in nil, toggles the mode-line.
-If called with a negative argument, simply disable the mode-line."
-  (interactive)
-  (if arg
-      (if (> arg 0)
-	  (toggle-mode-line-toggler)
-	(when mode-line-format (toggle-mode-line-off)))
-    (toggle-mode-line-toggler)))
+;; (defun toggle-mode-line (&optional arg)
+;;   "Stores the current mode-line-format in nil, toggles the mode-line.
+;; If called with a negative argument, simply disable the mode-line."
+;;   (interactive)
+;;   (if arg
+;;       (if (> arg 0)
+;; 	  (toggle-mode-line-toggler)
+;; 	(when mode-line-format (toggle-mode-line-off)))
+;;     (toggle-mode-line-toggler)))
 
-(evil-leader/set-key "m" 'toggle-mode-line)
+;; ;; (evil-leader/set-key "m" 'toggle-mode-line) -- we'll get back to this when we seperate it
 
-(define-minor-mode hide-mode-line
-  "A mode to hide the mode-line"
-  nil
-  nil
-  nil)
+;; (define-minor-mode hide-mode-line
+;;   "A mode to hide the mode-line"
+;;   nil
+;;   nil
+;;   nil)
 
-(define-globalized-minor-mode global-hide-mode-line
-  hide-mode-line
-  (lambda () "Turn off mode line" (toggle-mode-line -1)))
+;; (define-globalized-minor-mode global-hide-mode-line
+;;   hide-mode-line
+;;   (lambda () "Turn off mode line" (toggle-mode-line -1)))
 
-(global-hide-mode-line 1)
+;; (global-hide-mode-line 1)
 
-;; Prettify symbols
-(use-package prettify-utils.el
-  :load-path "prettify-utils.el/"
-  :demand t
-  :config (add-hook 'prettify-symbols-mode-hook '(lambda ()
-						      "Sets the list of symbols"
-						      (setq prettify-symbols-alist
-							    (prettify-utils-generate
-							     ("lambda" "λ")
-							     ("delta" "∆")
-							     ("nu" "𝜈")
-							     ("Reals" "ℝ")
-							     ("reals" "ℝ")
-							     ("<="     "≤")
-							     (">="     "≥")
-							     ("pi" "𝜋")
-							     ("->"     "→ "))))))
-
-;; I know the following is ugly but the hook for prettify symbols wasn't working from the global one
-(defun prettify-symbols-mode1 () "Sets prettify symbols mode to 1 in the graphical mode"
-       (if (window-system) (prettify-symbols-mode 1)
-	 (prettify-symbols-mode -1)))
-(add-hook 'prog-mode-hook 'prettify-symbols-mode1)
-(add-hook 'lisp-mode-hook 'prettify-symbols-mode1)
-(add-hook 'sgml-mode-hook 'prettify-symbols-mode1)
-(add-hook 'emacs-lisp-mode-hook 'prettify-symbols-mode1)
-(add-hook 'scheme-mode-hook 'prettify-symbols-mode1)
-(add-hook 'c-mode-hook 'prettify-symbols-mode1)
-(add-hook 'c++-mode-hook 'prettify-symbols-mode1)

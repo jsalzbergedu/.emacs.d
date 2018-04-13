@@ -60,23 +60,21 @@
     (setq pop-up-frames t)))
 
 ;; Org
-(add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
-(setq org-indent-indentation-per-level 1)
-(defun load-org-evil () "A function used to lazily load org-evil" (require 'org-evil))
-(add-hook 'org-mode-hook 'load-org-evil)
-(setq 
- org-ellipsis ":"
- org-fontify-done-headline t
- org-fontify-quote-and-verse-blocks t
- org-fontify-whole-heading-line t
- org-startup-indented t)
-(evil-leader/set-key
-  ;; Org Mode
-  "<SPC> l" 'org-store-link
-  "<SPC> c" 'org-capture
-  "<SPC> a" 'org-agenda
-  "<SPC> b" 'org-iswitchb)
-(find-file-noselect "~/tmp/mathscratchpad.org")
+(use-package org
+  :defer t
+  :init (add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
+  :config (setq org-indent-indentation-per-level 1
+		org-ellipsis ":"
+		org-fontify-done-headline t
+		org-fontify-quote-and-verse-blocks t
+		org-fontify-whole-heading-line t
+		org-startup-indented t)
+  :commands org-mode)
+
+(use-package org-evil
+  :after org)
+
+;; (find-file-noselect "~/tmp/mathscratchpad.org")
 
 
 ;; Tramp
@@ -107,62 +105,6 @@
 (use-package ag
   :defer t)
 
-;; mu4e setup taken from http://cachestocaches.com/2017/3/complete-guide-email-emacs-using-mu-and-/
-(use-package mu4e
-  :load-path "/usr/share/emacs/site-lisp/mu4e/"
-  :config (setq user-mail-address "jssalzbe@ncsu.edu"
-		  smtpmail-smtp-user "jssalzbe@ncsu.edu"
-		  smtpmail-local-domain "gmail.com"
-		  smtpmail-default-smtp-server "smtp.gmail.com"
-		  smtpmail-smtp-server "smtp.gmail.com"
-		  smtpmail-smtp-service 587
-		  mu4e-contexts `( ,(make-mu4e-context
-				     :name "Gmail"
-				     :match-func (lambda (msg) (when msg
-							    (string-prefix-p "/Gmail" (mu4e-message-field msg :maildir))))
-				     :vars '((mu4e-trash-folder . "/Gmail/[Gmail].Trash")
-					     (mu4e-refile-folder . "/Gmail/[Gmail].Archive"))))))
-
-(defun advised-mu4e-headers-view-message (orig-fun)
-  "View message at point.
-If there's an existing window for the view, re-use that one. If
-not, create a new one, depending on the value of
-`mu4e-split-view': if it's a symbol `horizontal' or `vertical',
-split the window accordingly; if it is nil, replace the current
-window. "
-  (interactive)
-  (unless (eq major-mode 'mu4e-headers-mode)
-    (mu4e-error "Must be in mu4e-headers-mode (%S)" major-mode))
-  (let* ((msg (mu4e-message-at-point))
-	  (docid (or (mu4e-message-field msg :docid)
-		   (mu4e-warn "No message at point")))
-	  ;; decrypt (or not), based on `mu4e-decryption-policy'.
-	  (decrypt
-	    (and (member 'encrypted (mu4e-message-field msg :flags))
-	      (if (eq mu4e-decryption-policy 'ask)
-		(yes-or-no-p (mu4e-format "Decrypt message?"))
-		mu4e-decryption-policy)))
-					;(viewwin (mu4e~headers-redraw-get-view-window)))
-	  )
-    ;(unless (window-live-p viewwin)
-    ;  (mu4e-error "Cannot get a message view"))
-    ;(select-window viewwin)
-    ;(switch-to-buffer (mu4e~headers-get-loading-buf))
-    (mu4e~proc-view docid mu4e-view-show-images decrypt)
-    (when (boundp 'mu4e~view-buffer)
-      (ignore-errors (make-indirect-buffer mu4e~view-buffer "*mu4e-view-all*"))))
-  )
-
-(advice-add 'mu4e-headers-view-message :around #'advised-mu4e-headers-view-message)
-(defun switch-to-buffer-just-work ()
-  "This gosh darn thing just needs to work"
-  (interactive)
-  (switch-to-buffer "*mu4e-headers*"))
-(advice-add 'mu4e-headers-view-message :after #'(lambda () (call-interactively 'switch-to-buffer-just-work)))
-
-
-
-(use-package evil-mu4e)
 ;; ERC irc client
 (setq erc-autojoin-channels-alist (list (cons "freenode.net" (list "#stratis-storage" "#scheme")) (cons "mozilla.org" (list "#rust" "#rust-beginners" "#servo"))))
 (setq erc-prompt (concat "<jcob>:"))
@@ -172,5 +114,28 @@ window. "
   (erc :server "irc.freenode.net" :port 6667 :nick "jcob" :full-name "Jacob Salzberg")
   (erc :server "irc.mozilla.org" :port 6667 :nick "jcob" :full-name "Jacob Salzberg"))
 
+(setq erc-autojoin-mode t
+      erc-button-mode t
+      erc-fill-mode t
+      erc-irccontrols-mode t
+      erc-list-mode t
+      erc-match-mode t
+      erc-menu-mode t
+      erc-move-to-prompt-mode t
+      erc-netsplit-mode t
+      erc-networks-mode t
+      erc-noncommands-mode t
+      erc-pcomplete-mode t
+      erc-readonly-mode t
+      erc-ring-mode t
+      erc-stamp-mode t
+      erc-track-minor-mode t)
+
+;; Ag
+(use-package ag)
+
 ;; Term
-(use-package term+)
+(use-package ansi-term
+  :defer t
+  :config (add-hook 'term-mode-hook (lambda () 
+				      (evil-local-set-key 'normal (kbd "p") 'term-paste))))
