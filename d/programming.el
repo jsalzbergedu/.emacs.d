@@ -10,7 +10,7 @@
 ;; Prettify symbols
 (use-package prettify-utils
   :load-path "prettify-utils.el/"
-  :defer t
+  :demand t
   :config (progn (add-hook 'prettify-symbols-mode-hook '(lambda ()
 							  "Sets the list of symbols"
 							  (setq prettify-symbols-alist
@@ -25,7 +25,6 @@
 								 ("pi" "𝜋")
 								 ("->"     "→ "))))))
 
-  :commands prettify-symbols-mode
   :init (add-hook 'prog-minor-modes-common 'prettify-symbols-mode))
 
 ;; Smartparens, for () {} '' "" []
@@ -64,7 +63,26 @@
 ;;   :load-path "lsp-ui/"
 ;;   :config (add-hook 'lsp-mode-hook 'lsp-ui-mode))
 
+;; Project hyrdra for generating hydras for projects
+(use-package project-hydra
+  :demand t
+  :load-path "project-hydra/")
 
+;; Magit
+(use-package magit
+  :defer t
+  :config (require 'evil-magit)
+  :init (defhydra hydra-magit (:hint nil :color blue)
+	  "
+^Commands^
+----------------
+_s_ magit-status _p_ magit-pull
+_b_ magit-branch _c_ magit-checkout
+"
+	  ("s" magit-status)
+	  ("p" magit-pull)
+	  ("b" magit-branch)
+	  ("c" magit-chekcout)))
 
 ;; Flycheck
 (use-package flycheck
@@ -79,6 +97,7 @@
 		company-minimum-prefix-length 1)
   :commands global-company-mode)
 
+;; Nlinum to display the line
 (use-package nlinum
   :defer t
   :init (add-hook 'prog-minor-modes-common 'nlinum-mode)
@@ -154,18 +173,14 @@ Otherwise, display the checkstyle buffer"
 					   tab-width 4
 					   c-basic-offset 4)))
 	 (setq lsp-java--workspace-folders (get-subdirs "~/Programming/java/")))
-  (defhydra hydra-java (:color blue :hint nil)
-    "
-^Check style^          ^Build^
-^^^^^^^^^^^^^--------------------------
-_c_ checkstyle-compile _b_ gradle-build
-_s_ checkstyle         _t_ gradle-test
-"
-    ("c" checkstyle-compile)
-    ("s" checkstyle)
-    ("b" gradle-build)
-    ("t" gradle-test))
-  (evil-define-key 'normal 'java-mode-map (kbd "SPC p") 'hydra-java/body)
+  (project-hydra hydra-java
+    :test gradle-test
+    :compile gradle-build
+    :stylecheck checkstyle
+    :search counsel-ag/java
+    :git magit-status
+    :and ("c" checkstyle-compile))
+  (evil-define-key 'normal java-mode-map (kbd "SPC p") 'hydra-java/body)
   :commands lsp-java-enable)
 
 
@@ -176,6 +191,7 @@ _s_ checkstyle         _t_ gradle-test
 (add-hook 'emacs-lisp-mode-hook 'prog-minor-modes-common)
 (defun eval-region-advice (eval-region-orig start end &optional printflag read-function)
   (funcall eval-region-orig start end t read-function))
+(advice-add 'eval-region :around 'eval-region-advice)
 (evil-define-key 'visual emacs-lisp-mode-map "SPC e" 'eval-region) ;; This doesn't work, for some reason.
 
 ;; Common Lisp:

@@ -90,8 +90,6 @@
 		       (evil-mode 1)
 		       (global-undo-tree-mode)))
 
-;; GOOD SO FAR
-
 ;; Ivy, Swiper and Council, and flx:
 (use-package swiper
   :bind ("C-s" . swiper))
@@ -109,12 +107,13 @@
   :bind ("C-c C-r" . ivy-resume)
   :commands ivy-mode)
 
+(use-package hydra
+  :demand t)
+
 (use-package ivy-hydra
   :demand t)
 
 (ivy-mode 1)
-
-;; GOOD SO FAR
 
 (use-package counsel
   :demand t

@@ -1,10 +1,6 @@
 ;; -*- lexical-binding: t -*-
 ;;; Applications in Emacs
 
-;; Magit
-(use-package magit
-  :defer t
-  :config (require 'evil-magit))
 
 ;; Chronos
 (use-package chronos
@@ -83,19 +79,19 @@
 	     (cons tramp-file-name-regexp nil))
 
 ;; PDF tools
-(pdf-tools-install)
-(setq
- pdf-view-continuous t
- pdf-view-display-size :fit-page)
-(add-hook 'pdf-view-mode-hook
-	  (lambda ()
-	    (local-set-key (kbd "q") 'image-kill-buffer)
-	    (local-set-key (kbd "h") 'pdf-view-previous-page)
-	    (local-set-key (kbd "l") 'pdf-view-next-page)
-	    (local-unset-key (kbd "<SPC>"))
-	    (local-set-key (kbd "a a") 'ivy-switch-buffer)
-	    (local-set-key (kbd "j") 'pdf-view-next-line-or-next-page)
-	    (local-set-key (kbd "k") 'pdf-view-previous-line-or-previous-page)))
+;;(pdf-tools-install)
+;; (setq
+;;  pdf-view-continuous t
+;;  pdf-view-display-size :fit-page)
+;; (add-hook 'pdf-view-mode-hook
+;; 	  (lambda ()
+;; 	    (local-set-key (kbd "q") 'image-kill-buffer)
+;; 	    (local-set-key (kbd "h") 'pdf-view-previous-page)
+;; 	    (local-set-key (kbd "l") 'pdf-view-next-page)
+;; 	    (local-unset-key (kbd "<SPC>"))
+;; 	    (local-set-key (kbd "a a") 'ivy-switch-buffer)
+;; 	    (local-set-key (kbd "j") 'pdf-view-next-line-or-next-page)
+;; 	    (local-set-key (kbd "k") 'pdf-view-previous-line-or-previous-page)))
 
 ;; Info
 (evil-define-key 'normal Info-mode-map

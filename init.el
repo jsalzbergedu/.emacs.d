@@ -30,7 +30,7 @@
  '(hl-paren-colors (quote ("#ecf0f1" "#ecf0f1" "#c0392b")))
  '(package-selected-packages
    (quote
-    (forth-mode dash-functional google-c-style realgud json-mode exec-path-from-shell rainbow-identifiers ag rainbow-delimiters smartparens flatui-theme ## doom-themes all-the-icons-dired paradox nlinum neotree rust-mode pdf-tools goto-chg evil-leader use-package helm company-racer racer flycheck flycheck-rust eww-lnum transpose-frame js3-mode nhexl-mode yatex magit chronos sound-wav auctex with-editor evil-surround evil-magit markdown-mode column-marker company-arduino toml-mode package-lint package-build cargo workgroups2 dired-hacks-utils dired-subtree i3wm indent-tools ivy swiper counsel ivy-hydra elpy flx ps-ccrypt js3 eclimd stumpwm-mode slime org-evil geiser scheme-complete paredit evil)))
+    (emojify forth-mode dash-functional google-c-style realgud json-mode exec-path-from-shell rainbow-identifiers ag rainbow-delimiters smartparens flatui-theme ## doom-themes all-the-icons-dired paradox nlinum neotree rust-mode pdf-tools goto-chg evil-leader use-package helm company-racer racer flycheck flycheck-rust eww-lnum transpose-frame js3-mode nhexl-mode yatex magit chronos sound-wav auctex with-editor evil-surround evil-magit markdown-mode column-marker company-arduino toml-mode package-lint package-build cargo workgroups2 dired-hacks-utils dired-subtree i3wm indent-tools ivy swiper counsel ivy-hydra elpy flx ps-ccrypt js3 eclimd stumpwm-mode slime org-evil geiser scheme-complete paredit evil)))
  '(sml/active-background-color "#34495e")
  '(sml/active-foreground-color "#ecf0f1")
  '(sml/inactive-background-color "#dfe4ea")

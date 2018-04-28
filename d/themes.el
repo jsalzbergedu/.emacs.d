@@ -74,6 +74,12 @@
 (set-face-attribute 'mode-line-inactive nil :background "#3c4c55" :foreground "#899ba6")
 (set-face-attribute 'mode-line nil :background "#3c4b53 ")
 
+;; Emoji
+(use-package emojify
+  :demand t
+  :config (global-emojify-mode))
+
+
 ;; ;; Hide mode line
 ;; (defvar mode-line-storage nil)
 ;; (make-variable-buffer-local 'mode-line-storage)
