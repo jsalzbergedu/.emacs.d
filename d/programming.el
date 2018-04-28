@@ -37,6 +37,8 @@
   :commands (smartparens-mode sp-forward-slurp-sexp)
   :init (add-hook 'prog-minor-modes-common 'smartparens-mode)
   :bind (:map evil-normal-state-map
+	      ("SPC s" . sp-forward-slurp-sexp)
+	      :map evil-motion-state-map
 	      ("SPC s" . sp-forward-slurp-sexp)))
 
 ;; Rainbow delimiters, a visual hint of nest depth
@@ -55,11 +57,19 @@
 (use-package company-lsp
   :demand t
   :load-path "company-lsp/"
-  :config (add-to-list 'company-backend 'company-lsp)
-  :after company)
+  :config (add-to-list 'company-backend 'company-lsp))
+;; LSP integration with flycheck
+;; (use-package lsp-ui
+;;   :demand t
+;;   :load-path "lsp-ui/"
+;;   :config (add-hook 'lsp-mode-hook 'lsp-ui-mode))
+
+
 
 ;; Flycheck
-(use-package flycheck)
+(use-package flycheck
+  :defer t
+  :config (setq flycheck-idle-change-delay 2))
 
 ;; Company mode for autocompletion
 (use-package company
@@ -81,7 +91,11 @@
   :commands google-set-c-style)
 
 ;; Python:
-(elpy-enable)
+(use-package lsp-python
+  :demand t
+  :load-path "lsp-python/"
+  :config (progn (add-hook 'python-mode-hook #'lsp-python-enable)
+		 (add-hook 'python-mode-hook 'prog-minor-modes-common)))
 
 ; Javascript:
 
@@ -99,14 +113,14 @@
 
 (use-package elisp-checkstyle
   :load-path "elisp-checkstyle"
-  :defer t
+  :demand t
   :config (setq checkstyle-executable "~/cs-checkstyle/checkstyle")
   :commands (checkstyle-curr-p checkstyle-output-curr))
 
 (use-package gradle-mode
   :load-path "emacs-gradle-mode/"
-  :defer t
-  :commands (gradle-build gradle-test)
+  :demand t ;; I don't like it, but lsp-mode doesn't play nice with lazy loading
+  :config
   :after elisp-checkstyle)
 
 (defun checkstyle-compile ()
@@ -121,6 +135,11 @@ Otherwise, display the checkstyle buffer"
   (interactive)
   (checkstyle-output-curr))
 
+(defun counsel-ag/java (&rest args)
+  "Go up to the root of a java project, and search the files"
+  (interactive)
+  (counsel-ag nil (locate-dominating-file default-directory "build.gradle")))
+
 (use-package lsp-java
   :demand t
   :load-path "lsp-java/"
@@ -128,12 +147,13 @@ Otherwise, display the checkstyle buffer"
   (progn (add-hook 'java-mode-hook 'prog-minor-modes-common)
 	 (add-hook 'java-mode-hook 'lsp-java-enable)
 	 (add-hook 'java-mode-hook (lambda ()
+				     (flycheck-mode 1)
 				     (google-set-c-style)
 				     (google-make-newline-indent)
-				     (setq indent-tabs-mode nil)
-				     (setq tab-width 4)
-				     (setq c-basic-offset 4)))
-	 (setq lsp-java--workspace-folders (get-subdirs "~/Programming/")))
+				     (setq indent-tabs-mode nil
+					   tab-width 4
+					   c-basic-offset 4)))
+	 (setq lsp-java--workspace-folders (get-subdirs "~/Programming/java/")))
   (defhydra hydra-java (:color blue :hint nil)
     "
 ^Check style^          ^Build^
@@ -156,7 +176,7 @@ _s_ checkstyle         _t_ gradle-test
 (add-hook 'emacs-lisp-mode-hook 'prog-minor-modes-common)
 (defun eval-region-advice (eval-region-orig start end &optional printflag read-function)
   (funcall eval-region-orig start end t read-function))
-(evil-define-key 'visual emacs-lisp-mode-map "SPC e" 'eval-region)
+(evil-define-key 'visual emacs-lisp-mode-map "SPC e" 'eval-region) ;; This doesn't work, for some reason.
 
 ;; Common Lisp:
 (add-to-list 'load-path "/usr/share/emacs/site-lisp/slime/")
@@ -178,11 +198,12 @@ _s_ checkstyle         _t_ gradle-test
 (use-package scheme-complete)
 (use-package geiser
   :defer t
-  :init (add-to-list 'auto-mode-alist '("\\.scm\\'" . (lambda ()
-							(scheme-mode 1)
-							(geiser-mode 1))))
+  :init (add-hook 'scheme-mode-hook (lambda ()
+				      (geiser-mode)
+				      (prog-minor-modes-common)))
   :config (progn (setq geiser-active-implementations '(chicken))
-		 (add-hook 'scheme-mode-hook 'prog-minor-modes-common))
+		 (add-hook 'scheme-mode-hook 'prog-minor-modes-common)
+		 (add-hook 'geiser-repl-mode-hook 'prog-minor-modes-common))
   :commands geiser-mode)
 
 ;; Rust:
@@ -257,3 +278,7 @@ _s_ checkstyle         _t_ gradle-test
 (use-package json-mode
   :defer t
   :config (progn (add-hook 'json-mode-hook 'prog-minor-modes-common)))
+
+;; Forth
+(use-package forth-mode
+  :defer t)

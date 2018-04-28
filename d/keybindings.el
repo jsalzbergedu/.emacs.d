@@ -16,6 +16,14 @@
 	 ("SPC k" . windmove-cf-up)
 	 ("SPC j" . windmove-cf-down)
 	 ("SPC q" . begone)
+	 ("SPC a" . switch-to-buffer)
+	 :map evil-motion-state-map
+	 ("SPC" . nil)
+	 ("SPC l" . windmove-cf-right)
+	 ("SPC h" . windmove-cf-left)
+	 ("SPC k" . windmove-cf-up)
+	 ("SPC j" . windmove-cf-down)
+	 ("SPC q" . begone)
 	 ("SPC a" . switch-to-buffer)))
 
 ;; Have to unset space in many packages
@@ -28,6 +36,11 @@
   :demand t
   :bind (:map compilation-mode-map
 	      ("SPC" . nil)))
+
+(use-package info
+  :defer t
+  ;; For some reason Info must be brute forced here 
+  :config (substitute-key-definition 'Info-scroll-up nil Info-mode-map)) 
 
 ;; Either move across emacs windows or stumpwm windows
 (defun windmove-plain (dir)
@@ -114,6 +127,8 @@
 	 ("C-c l" . counsel-locate)
 	 ("C-S-o" . counsel-rhythmbox)
 	 :map evil-normal-state-map
+	 ("SPC f" . counsel-find-file)
+	 :map evil-motion-state-map
 	 ("SPC f" . counsel-find-file)))
 
 ;;; Other keybindings

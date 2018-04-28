@@ -14,10 +14,6 @@
 ;; Transpose frames to get frames spawned on the bottom to the right
 (require 'transpose-frame)
 
-;; Split window horozontally
-(setq split-height-threshold 0)
-(setq split-width-threshold 1000)
-
 ;; If in stumpwm, use pop-up frames and doom-nova
 ;; Else, use default setting for pop-up frames and use doom-one
 ;;(require 'doom-themes)
