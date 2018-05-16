@@ -98,6 +98,9 @@
 (use-package flx
   :defer t)
 
+(use-package flx-ido
+  :defer t)
+
 (use-package ivy
   :demand t
   :config (progn (setq ivy-use-virtual-buffers t

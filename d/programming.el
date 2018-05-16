@@ -1,12 +1,19 @@
 ;; -*- lexical-binding: t -*-
 ;;; Programming packages and setup
 
+;; Remove stupid tabs
+(setq-default indent-tabs-mode nil)
+
 ;; Relevant to all programming before language packages are setup:
-(defvar prog-minor-modes-common (list) "A common hook for programming minor modes")
+(defvar prog-minor-modes-common (list)
+  "A common hook for programming minor modes")
 (defun prog-minor-modes-common ()
   "A common hook for programming minor modes"
   (interactive)
   (mapc 'funcall prog-minor-modes-common))
+(defun add-prog-minor-modes-common (&rest mode-hooks)
+  "Add prog-minor-modes-common to MODE-HOOKS"
+  (mapc (lambda (a) (add-hook a 'prog-minor-modes-common)) mode-hooks))
 ;; Prettify symbols
 (use-package prettify-utils
   :load-path "prettify-utils.el/"
@@ -46,6 +53,14 @@
   :commands rainbow-delimiters-mode
   :init (add-hook 'prog-minor-modes-common 'rainbow-delimiters-mode))
 
+;; 80 char rule
+(defun highlight-80-char ()
+  "Highlight all lines over 80 chars."
+  (interactive)
+  (highlight-lines-matching-regexp ".\\{81\\}" 'hi-green))
+
+(add-hook 'prog-minor-modes-common 'highlight-80-char)
+
 ;; LSP mode, a common interface to programs
 ;; The lsp modes don't play nice with lazy loading
 (use-package lsp-mode
@@ -58,10 +73,27 @@
   :load-path "company-lsp/"
   :config (add-to-list 'company-backend 'company-lsp))
 ;; LSP integration with flycheck
-;; (use-package lsp-ui
-;;   :demand t
-;;   :load-path "lsp-ui/"
-;;   :config (add-hook 'lsp-mode-hook 'lsp-ui-mode))
+(use-package lsp-ui
+  :demand t
+  :load-path "lsp-ui/"
+  :config (add-hook 'lsp-mode-hook 'lsp-ui-mode))
+
+;; Project management
+(use-package personal-info
+  :load-path "personal-info/")
+
+(use-package project-init
+  :load-path "project-init/"
+  :config (progn
+            (setq project-init-author-email (personal-info-get 'email)
+                  project-init-author-name (personal-info-get 'name))))
+
+(use-package projectile
+  :demand t
+  :config (projectile-global-mode 1))
+
+(use-package counsel-projectile
+  :demand t)
 
 ;; Project hyrdra for generating hydras for projects
 (use-package project-hydra
@@ -72,6 +104,11 @@
 (use-package magit
   :defer t
   :config (require 'evil-magit)
+  :bind
+  (:map magit-mode-map
+              ("SPC" . nil))
+  (:map magit-diff-mode-map
+        ("SPC" . nil))
   :init (defhydra hydra-magit (:hint nil :color blue)
 	  "
 ^Commands^
@@ -118,6 +155,7 @@ _b_ magit-branch _c_ magit-checkout
 
 ; Javascript:
 
+;; JVM languages
 ;; Java:
 (defun is-dirlink (d)
   "Returns nil if the file does not end in /. or /.."
@@ -159,6 +197,9 @@ Otherwise, display the checkstyle buffer"
   (interactive)
   (counsel-ag nil (locate-dominating-file default-directory "build.gradle")))
 
+(use-package f
+  :demand t)
+
 (use-package lsp-java
   :demand t
   :load-path "lsp-java/"
@@ -172,17 +213,35 @@ Otherwise, display the checkstyle buffer"
 				     (setq indent-tabs-mode nil
 					   tab-width 4
 					   c-basic-offset 4)))
-	 (setq lsp-java--workspace-folders (get-subdirs "~/Programming/java/")))
+         (setq lsp-java--workspace-folders (get-subdirs "~/Programming/")))
   (project-hydra hydra-java
     :test gradle-test
     :compile gradle-build
     :stylecheck checkstyle
     :search counsel-ag/java
-    :git magit-status
+    :git hydra-magit/body
     :and ("c" checkstyle-compile))
   (evil-define-key 'normal java-mode-map (kbd "SPC p") 'hydra-java/body)
   :commands lsp-java-enable)
 
+;; Groovy
+(use-package groovy-mode
+  :config (progn (add-hook 'groovy-mode-hook 'prog-minor-modes-common)
+		 (add-to-list 'auto-mode-alist '("\\build.gradle\\'" . groovy-mode)))
+  :defer t)
+
+;; Scala
+(use-package ensime
+  :defer t
+  :commands ensime
+  :config (setq ensime-startup-notification nil))
+
+(use-package sbt-mode)
+
+(use-package scala-mode
+  :defer t
+  :config (progn (add-hook 'scala-mode-hook 'prog-minor-modes-common)
+		 (setq scala-indent:add-space-for-scaladoc-asterisk nil)))
 
 ;; Elisp:
 (use-package cl-lib
@@ -207,7 +266,7 @@ Otherwise, display the checkstyle buffer"
 		   (load (expand-file-name "~/quicklisp/slime-helper.el"))))
 		 (setq inferior-lisp-program "/usr/bin/sbcl")
 		 (evil-define-key 'normal slime-mode-map "SPC e" 'slime-eval-region)
-		 (add-hook 'slime-lisp-mode-hook 'prog-minor-modes-common)))
+		 (add-prog-minor-modes-common 'lisp-mode-hook 'slime-repl-mode-hook)))
 
 ;; Scheme
 (setq scheme-program-name "csi -:c")
@@ -218,8 +277,7 @@ Otherwise, display the checkstyle buffer"
 				      (geiser-mode)
 				      (prog-minor-modes-common)))
   :config (progn (setq geiser-active-implementations '(chicken))
-		 (add-hook 'scheme-mode-hook 'prog-minor-modes-common)
-		 (add-hook 'geiser-repl-mode-hook 'prog-minor-modes-common))
+		 (add-prog-minor-modes-common 'scheme-mode-hook 'geiser-repl-mode-hook))
   :commands geiser-mode)
 
 ;; Rust:
@@ -262,7 +320,8 @@ Otherwise, display the checkstyle buffer"
 ;; Markdown
 (use-package markdown-mode
   :defer t
-  :config (progn (setq markdown-command "/usr/bin/pandoc")))
+  :config (progn (setq markdown-command "/usr/bin/pandoc")
+		 (add-hook 'markdown-mode-hook 'prog-minor-modes-common)))
 
 ;; Shell
 (use-package sh-script
@@ -275,7 +334,8 @@ Otherwise, display the checkstyle buffer"
 ;; Chroot
 ;; (require 'schroot-mode "~/.emacs.d/schroot-mode/schroot-mode.el")
 ;; (progn (schroot-mode-global-mode 1)
-;; 		 (setq schroot-mode-files-loc (expand-file-name "~/.emacs.d/schroot-mode/")) ;; 		 (schroot-mode-add-dir-config "libseawolf" "ubuntu")
+;; 		 (setq schroot-mode-files-loc (expand-file-name "~/.emacs.d/schroot-mode/"))
+;; 		 (schroot-mode-add-dir-config "libseawolf" "ubuntu")
 ;; 		 (schroot-mode-add-dir-config "seawolf" "ubuntu")
 ;; 		 (schroot-mode-add-dir-config "swpycv" "ubuntu")
 ;; 		 (schroot-mode-add-dir-config "svr" "ubuntu"))
@@ -297,4 +357,12 @@ Otherwise, display the checkstyle buffer"
 
 ;; Forth
 (use-package forth-mode
+  :config (add-hook 'forth-mode-hook 'prog-minor-modes-common)
   :defer t)
+
+;; Idris
+(use-package idris-mode
+  :defer t
+  :config (add-prog-minor-modes-common 'idris-mode-hook
+				       'idris-repl-mode-hook
+				       'idris-ipkg-mode-hook))

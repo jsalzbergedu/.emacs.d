@@ -1,6 +1,18 @@
 ;; -*- lexical-binding: t -*-
 ;;; Applications in Emacs
 
+;; Scratch bufffer
+(setq initial-scratch-message
+      (concat ";; -*- lexical-binding: t -*-\n" initial-scratch-message))
+(add-hook 'finalize (lambda () (let ((current-buffer (current-buffer)))
+                            (set-buffer "*scratch*")
+                            (setq-default lexical-binding t)
+                            (set-buffer current-buffer))))
+
+;; Passwords
+(use-package passwords
+  :load-path "passwords/"
+  :demand t)
 
 ;; Chronos
 (use-package chronos
@@ -135,3 +147,14 @@
   :defer t
   :config (add-hook 'term-mode-hook (lambda () 
 				      (evil-local-set-key 'normal (kbd "p") 'term-paste))))
+
+
+;; Package update
+(use-package auto-package-update
+  :defer t
+  :commands auto-package-update-now)
+
+;; Gitter
+(use-package gitter
+  :defer t
+  :init (setq gitter-token (passwords-get 'gitter)))

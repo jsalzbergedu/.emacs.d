@@ -30,7 +30,13 @@
  '(hl-paren-colors (quote ("#ecf0f1" "#ecf0f1" "#c0392b")))
  '(package-selected-packages
    (quote
-    (emojify forth-mode dash-functional google-c-style realgud json-mode exec-path-from-shell rainbow-identifiers ag rainbow-delimiters smartparens flatui-theme ## doom-themes all-the-icons-dired paradox nlinum neotree rust-mode pdf-tools goto-chg evil-leader use-package helm company-racer racer flycheck flycheck-rust eww-lnum transpose-frame js3-mode nhexl-mode yatex magit chronos sound-wav auctex with-editor evil-surround evil-magit markdown-mode column-marker company-arduino toml-mode package-lint package-build cargo workgroups2 dired-hacks-utils dired-subtree i3wm indent-tools ivy swiper counsel ivy-hydra elpy flx ps-ccrypt js3 eclimd stumpwm-mode slime org-evil geiser scheme-complete paredit evil)))
+    (tco gitter ensime sbt-mode auto-package-update idris-mode groovy-mode flx-ido projectile counsel-projectile emojify forth-mode dash-functional google-c-style realgud json-mode exec-path-from-shell rainbow-identifiers ag rainbow-delimiters smartparens flatui-theme ## doom-themes all-the-icons-dired paradox nlinum neotree rust-mode pdf-tools goto-chg evil-leader use-package helm company-racer racer flycheck flycheck-rust eww-lnum transpose-frame js3-mode nhexl-mode yatex magit chronos sound-wav auctex with-editor evil-surround evil-magit markdown-mode column-marker company-arduino toml-mode package-lint package-build cargo workgroups2 dired-hacks-utils dired-subtree i3wm indent-tools ivy swiper counsel ivy-hydra elpy flx ps-ccrypt js3 eclimd stumpwm-mode slime org-evil geiser scheme-complete paredit evil)))
+ '(safe-local-variable-values
+   (quote
+    ((idris-load-packages "effects")
+     (idris-load-packages quote
+			  ("effects"))
+     (idris-load-packages . "effects"))))
  '(sml/active-background-color "#34495e")
  '(sml/active-foreground-color "#ecf0f1")
  '(sml/inactive-background-color "#dfe4ea")
@@ -57,7 +63,7 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- )
+ '(fixed-pitch ((t (:family "Inconsolata")))))
 
 (put 'upcase-region 'disabled nil)
 (with-eval-after-load 'init.el (mapc 'funcall finalize))
