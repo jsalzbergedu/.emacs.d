@@ -26,6 +26,15 @@
 	 ("SPC q" . begone)
 	 ("SPC a" . switch-to-buffer)))
 
+;; A nice little package for dealing with strings
+(use-package s
+  :demand t)
+
+(use-package evil-collection
+  :after evil
+  :config (progn (push "SPC" evil-collection-key-blacklist)
+                 (evil-collection-init)))
+
 ;; Have to unset space in many packages
 (use-package dired
   :demand t
@@ -36,6 +45,11 @@
   :demand t
   :bind (:map compilation-mode-map
 	      ("SPC" . nil)))
+
+(use-package help-mode
+  :demand t
+  :bind (:map help-mode-map
+              ("SPC" . nil)))
 
 (use-package info
   :defer t
@@ -56,7 +70,9 @@
 (defun stump-move (dir)
   "Move stumpwm focus in direction DIR"
   (interactive "sDIR: ")
-  (make-process :name "windmove" :buffer nil :command (list "~/.stumpwm.d/stumpwm-contrib/util/stumpish/stumpish" (concat "move-focus " dir))))
+  (make-process :name "windmove" :buffer nil :command
+                (list "~/.stumpwm.d/stumpwm-contrib/util/stumpish/stumpish"
+                      (concat "move-focus " dir))))
 
 
 (defun windmove-or-change-focus (dir)

@@ -6,7 +6,7 @@
       (concat ";; -*- lexical-binding: t -*-\n" initial-scratch-message))
 (add-hook 'finalize (lambda () (let ((current-buffer (current-buffer)))
                             (set-buffer "*scratch*")
-                            (setq-default lexical-binding t)
+                            (setq lexical-binding t)
                             (set-buffer current-buffer))))
 
 ;; Passwords
@@ -20,8 +20,9 @@
   :config (progn (evil-set-initial-state 'chronos-mode 'emacs)
 		 (setq chronos-expiry-functions '(chronos-buffer-notify
 						  chronos-desktop-notifications-notify
-						  chronos-sound-notify))
-		 chronos-notification-wav "~/Music/echoed-ding.wav"
+						  ;;chronos-sound-notify
+                                                  ))
+		 ;;chronos-notification-wav "~/Music/echoed-ding.wav"
 		 chronos-shell-notify-program "mplayer -ao pulse /home/jacob/Music/echoed-ding.ogg")
   :init (global-set-key (kbd "C-c t t")  'chronos-add-timer))
 
@@ -35,19 +36,24 @@
 		 (add-hook 'dired-mode-hook 'reset-i)))
 
 
-;; Neotree
-(use-package all-the-icons)
+;; Neotree (use-package all-the-icons)
 (set-face-attribute 'vertical-border nil :foreground "#899ba6") 
 (use-package neotree
   :defer t
-  :config (progn (global-set-key [f8] 'neotree-toggle)
-		 (doom-themes-neotree-config)
-		 (add-hook 'neotree-mode-hook (lambda ()
-						(setq neo-window-width 30)
-						(define-key evil-normal-state-local-map (kbd "TAB") 'neotree-enter)
-					        (define-key evil-normal-state-local-map (kbd "SPC") 'neotree-enter)
-						(define-key evil-normal-state-local-map (kbd "q") 'neotree-hide)
-						(define-key evil-normal-state-local-map (kbd "RET") 'neotree-enter)))))
+  :config
+  (global-set-key [f8] #'(lambda ()
+                           (interactive)
+                           (with-temp-buffer
+                             (when projectile-project-root
+                               (cd projectile-project-root))
+                             (neotree-toggle))))
+  (setq neo-theme 'ascii)
+  (add-hook 'neotree-mode-hook (lambda ()
+				 (setq neo-window-width 30)
+				 (define-key evil-normal-state-local-map (kbd "TAB") 'neotree-enter)
+				 (define-key evil-normal-state-local-map (kbd "SPC") 'neotree-enter)
+				 (define-key evil-normal-state-local-map (kbd "q") 'neotree-hide)
+				 (define-key evil-normal-state-local-map (kbd "RET") 'neotree-enter))))
 
 ;; Ccrypt
 (if (file-exists-p "~/.emacs.d/ps-ccrypt/ps-ccrypt.el")
@@ -70,14 +76,28 @@
 ;; Org
 (use-package org
   :defer t
-  :init (add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
-  :config (setq org-indent-indentation-per-level 1
-		org-ellipsis ":"
-		org-fontify-done-headline t
-		org-fontify-quote-and-verse-blocks t
-		org-fontify-whole-heading-line t
-		org-startup-indented t)
+  :init
+  (add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
+  :config
+  (setq org-indent-indentation-per-level 1
+	org-ellipsis ":"
+	org-fontify-done-headline t
+	org-fontify-quote-and-verse-blocks t
+	org-fontify-whole-heading-line t
+	org-startup-indented t
+        org-src-fontify-natively t)
+  (org-babel-do-load-languages 'org-babel-load-languages '((shell . t)
+                                                           (emacs-lisp . t)
+                                                           (scheme . t)
+                                                           (scala . t)
+                                                           (coq . t)
+                                                           (haskell . t)))
   :commands org-mode)
+
+(use-package ob-plantuml
+  :init
+  (setq org-plantuml-jar-path "/opt/plantuml/plantuml.jar")
+  :demand t)
 
 (use-package org-evil
   :after org)
@@ -119,7 +139,11 @@
 (defun my-erc-connect () 
   "Connect to the IRC servers I usually connect to"
   (interactive)
-  (erc :server "irc.freenode.net" :port 6667 :nick "jcob" :full-name "Jacob Salzberg")
+  (erc :server "irc.freenode.net"
+       :port 6667
+       :nick "jcob"
+       :password (passwords-get 'irc)
+       :full-name "Jacob Salzberg")
   (erc :server "irc.mozilla.org" :port 6667 :nick "jcob" :full-name "Jacob Salzberg"))
 
 (setq erc-autojoin-mode t

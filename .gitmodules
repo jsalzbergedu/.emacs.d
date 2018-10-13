@@ -7,3 +7,6 @@
 [submodule "prettify-utils.el"]
 	path = prettify-utils.el
 	url = https://github.com/Ilazki/prettify-utils.el.git
+[submodule "erc-sasl"]
+	path = erc-sasl
+	url = https://github.com/jane-lx/erc-sasl.git

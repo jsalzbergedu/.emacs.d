@@ -1,7 +1,7 @@
 ;; -*- lexical-binding: t -*-
 ;;; Programming packages and setup
 
-;; Remove stupid tabs
+;; Remove tabs
 (setq-default indent-tabs-mode nil)
 
 ;; Relevant to all programming before language packages are setup:
@@ -61,12 +61,18 @@
 
 (add-hook 'prog-minor-modes-common 'highlight-80-char)
 
-;; LSP mode, a common interface to programs
+;; Eglot, a simple interface to some LSP providers
+(use-package eglot
+  :defer t
+  :commands eglot-ensure)
+
+;; LSP mode, a common interface to LSP providers
 ;; The lsp modes don't play nice with lazy loading
 (use-package lsp-mode
   :demand t
   :load-path "lsp-mode/"
-  :config (setq lsp-inhibit-message t))
+  :config (progn (setq lsp-inhibit-message t
+                       lsp-print-io nil)))
 ;; LSP's completion package
 (use-package company-lsp
   :demand t
@@ -78,13 +84,18 @@
   :load-path "lsp-ui/"
   :config (add-hook 'lsp-mode-hook 'lsp-ui-mode))
 
+;; Realgud, an interface to debuggers in general
+(use-package realgud
+  :defer t
+  :commands realgud:gdb realgud:jdb)
+
 ;; Project management
 (use-package personal-info
   :load-path "personal-info/")
 
 (use-package project-init
   :load-path "project-init/"
-  :config (progn
+  :init (progn
             (setq project-init-author-email (personal-info-get 'email)
                   project-init-author-name (personal-info-get 'name))))
 
@@ -144,29 +155,18 @@ _b_ magit-branch _c_ magit-checkout
 ;; All c-likes
 (use-package google-c-style
   :defer t
-  :commands google-set-c-style)
+  :commands (google-set-c-style google-make-newline-indent))
 
 ;; Python:
-(use-package lsp-python
-  :demand t
-  :load-path "lsp-python/"
-  :config (progn (add-hook 'python-mode-hook #'lsp-python-enable)
-		 (add-hook 'python-mode-hook 'prog-minor-modes-common)))
+(use-package python-mode
+  :defer t
+  :hook (python-mode . eglot-ensure)
+  :init (add-hook 'python-mode-hook 'prog-minor-modes-common))
 
 ; Javascript:
 
 ;; JVM languages
 ;; Java:
-(defun is-dirlink (d)
-  "Returns nil if the file does not end in /. or /.."
-  (let ((len (length d)))
-    (or (and (>= len 3)
-	     (string= "/.." (substring d (- (length d) 3))))
-	(and (>= len 2)
-	     (string= "/." (substring d (- (length d) 2)))))))
-
-(defun get-subdirs (dir)
-  (cl-remove-if-not (lambda (f) (and (file-directory-p f) (not (is-dirlink f)))) (directory-files dir "")))
 
 (use-package elisp-checkstyle
   :load-path "elisp-checkstyle"
@@ -197,30 +197,72 @@ Otherwise, display the checkstyle buffer"
   (interactive)
   (counsel-ag nil (locate-dominating-file default-directory "build.gradle")))
 
-(use-package f
-  :demand t)
+
+(defvar c-basic-offset-set nil "What c-basic-offset is set to.")
+(defun c-basic-offset-fetch ()
+  (if c-basic-offset-set
+      c-basic-offset-set
+    4))
+(defun set-c-basic-offset ()
+  (setq-local c-basic-offset (c-basic-offset-fetch)))
+
+(defun find-gradle-build ()
+  (locate-dominating-file default-directory "build.gradle"))
+
+(defvar java-gradle-run-jar nil
+  "The jar to run in a java project")
+
+;; (defun get-with-ext (ext dir)
+;;   "Get all the files with ext from dir and its subdirectories."
+;;   (f-files dir (lambda (file) (equal (f-ext file) "class")) t))
+
+;; (defvar junit-executable nil "Where the junit executable is stored")
+
+;; (setq junit-executable "/usr/share/java/gradle/lib/plugins/junit-4.12.jar")
+
+;; (defun generate-gradle-junit-classpath ()
+;;   "Generate a classpath that allows running a test."
+;;   (let* ((built-classes (f-files (find-gradle-build)
+;;                            (lambda (file) (equal (f-ext file) "class") t)
+;;                            t)))
+;;     (-reduce-from (lambda (x y) )
+;;                   junit-executable)))
+
+(defun java-gradle-jar-run ()
+  "Run the jar for this project"
+  (interactive)
+  (let ((run-jar java-gradle-run-jar))
+    (with-temp-buffer
+      (cd (find-gradle-build))
+      (compile (format "java -jar %s" run-jar)))))
 
 (use-package lsp-java
   :demand t
   :load-path "lsp-java/"
+  :init (setq lsp-java--workspace-folders (append (f-directories "~/Programming/") (f-directories "~/eclipse-workspace/"))
+              lsp-java-server-install-dir (concat "~/.emacs.d/eclipse.jdt.ls/"
+                                                  "org.eclipse.jdt.ls.product/"
+                                                  "target/repository/"))
   :config
   (progn (add-hook 'java-mode-hook 'prog-minor-modes-common)
 	 (add-hook 'java-mode-hook 'lsp-java-enable)
 	 (add-hook 'java-mode-hook (lambda ()
-				     (flycheck-mode 1)
-				     (google-set-c-style)
-				     (google-make-newline-indent)
-				     (setq indent-tabs-mode nil
-					   tab-width 4
-					   c-basic-offset 4)))
-         (setq lsp-java--workspace-folders (get-subdirs "~/Programming/")))
+				                 (flycheck-mode 1)
+				                 (google-set-c-style)
+				                 (google-make-newline-indent)
+				                 (setq indent-tabs-mode nil
+					               tab-width 4
+                                                       c-basic-offset 4)))
+         (add-hook 'java-mode-hook 'set-c-basic-offset))
   (project-hydra hydra-java
     :test gradle-test
-    :compile gradle-build
+    :compile gradle-build--daemon
     :stylecheck checkstyle
     :search counsel-ag/java
     :git hydra-magit/body
-    :and ("c" checkstyle-compile))
+    :run java-gradle-jar-run
+    :and ("c" checkstyle-compile)
+    :and ("p" counsel-projectile-find-file))
   (evil-define-key 'normal java-mode-map (kbd "SPC p") 'hydra-java/body)
   :commands lsp-java-enable)
 
@@ -246,7 +288,9 @@ Otherwise, display the checkstyle buffer"
 ;; Elisp:
 (use-package cl-lib
   :demand t)
-(use-package exec-path-from-shell)
+(use-package exec-path-from-shell
+  :init (exec-path-from-shell-initialize))
+
 (add-hook 'emacs-lisp-mode-hook 'prog-minor-modes-common)
 (defun eval-region-advice (eval-region-orig start end &optional printflag read-function)
   (funcall eval-region-orig start end t read-function))
@@ -265,8 +309,9 @@ Otherwise, display the checkstyle buffer"
 		 (when (file-exists-p (expand-file-name "~/quicklisp/slime-helper.el"))
 		   (load (expand-file-name "~/quicklisp/slime-helper.el"))))
 		 (setq inferior-lisp-program "/usr/bin/sbcl")
-		 (evil-define-key 'normal slime-mode-map "SPC e" 'slime-eval-region)
-		 (add-prog-minor-modes-common 'lisp-mode-hook 'slime-repl-mode-hook)))
+		 (evil-define-key 'visual slime-mode-map "SPC e" 'slime-eval-region)
+		 (add-prog-minor-modes-common 'lisp-mode-hook 'slime-repl-mode-hook))
+  :init (add-hook 'lisp-mode-hook 'prog-minor-modes-common))
 
 ;; Scheme
 (setq scheme-program-name "csi -:c")
@@ -277,7 +322,9 @@ Otherwise, display the checkstyle buffer"
 				      (geiser-mode)
 				      (prog-minor-modes-common)))
   :config (progn (setq geiser-active-implementations '(chicken))
-		 (add-prog-minor-modes-common 'scheme-mode-hook 'geiser-repl-mode-hook))
+		 (add-prog-minor-modes-common 'scheme-mode-hook 'geiser-repl-mode-hook)
+                 (add-to-list 'auto-mode-alist '("\\.setup\\'" . scheme-mode))
+                 (add-to-list 'auto-mode-alist '("\\.meta\\'" . scheme-mode)))
   :commands geiser-mode)
 
 ;; Rust:
@@ -341,9 +388,25 @@ Otherwise, display the checkstyle buffer"
 ;; 		 (schroot-mode-add-dir-config "svr" "ubuntu"))
 
 ;; C/C++
-;; (use-package cmake-mode
-;;   :defer t
-;;   :config (add-hook 'cmake-mode-hook 'nlinum-mode))
+(use-package cmake-mode
+  :defer t
+  :config
+  (add-hook 'cmake-mode-hook 'prog-minor-modes-common))
+
+(use-package lsp-clangd
+  :load-path "lsp-clangd/"
+  :init (progn (add-hook 'c++-mode-hook (lambda ()
+                                          (google-set-c-style)
+                                          (google-make-newline-indent)
+                                          (setq indent-tabs-mode nil
+					        tab-width 2
+                                                c-basic-offset 2)
+                                          (prog-minor-modes-common)))
+               (setq lsp-clangd-executable "/usr/bin/clangd"
+                     cmake-style t)))
+
+
+
 ;; (use-package meson-mode
 ;;   :defer t)
 ;; (load-file "~/sources/rtags/src/rtags.elc")
@@ -366,3 +429,44 @@ Otherwise, display the checkstyle buffer"
   :config (add-prog-minor-modes-common 'idris-mode-hook
 				       'idris-repl-mode-hook
 				       'idris-ipkg-mode-hook))
+
+;; Ruby
+(use-package enh-ruby-mode
+  :defer t
+  :init (progn (add-to-list 'auto-mode-alist
+                              '("\\.rb\\'" . enh-ruby-mode))
+                 (add-to-list 'auto-mode-alist
+                              '("\\Rakefile\\'" . enh-ruby-mode)))
+  :config (add-hook 'enh-ruby-mode-hook 'prog-minor-modes-common)
+  :commands enh-ruby-mode)
+
+(use-package inf-ruby
+  :defer t
+  :config (add-hook 'inf-ruby-mode-hook 'prog-minor-modes-common))
+
+;; Xml
+(use-package nxml-mode
+  :defer t
+  :config (add-hook 'nxml-mode-hook 'prog-minor-modes-common))
+
+;; Uml
+(use-package plantuml-mode
+  :defer t
+  :init
+  (setq plantuml-jar-path "/opt/plantuml/plantuml.jar"))
+
+;; Coq
+(use-package proof-general
+  :defer t)
+
+;; Haskell
+(use-package haskell-mode
+  :init (setq haskell-process-type 'stack-ghci)
+  :defer t)
+
+(use-package inf-haskell
+  :defer t)
+
+;; F*
+(use-package fstar-mode
+  :defer t)
