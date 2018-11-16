@@ -12,7 +12,9 @@
 (if (window-system) (set-frame-size (selected-frame) 189 46))
 
 ;; Transpose frames to get frames spawned on the bottom to the right
-(require 'transpose-frame)
+(use-package transpose-frame
+  :straight t
+  :demand t)
 
 ;; If in stumpwm, use pop-up frames and doom-nova
 ;; Else, use default setting for pop-up frames and use doom-one
@@ -23,10 +25,6 @@
 ;;       (progn (setq pop-up-frames t)
 ;; 	     (load-theme 'doom-nova t))
 ;;     (load-theme 'doom-one t)))
-
-(use-package flatui-theme
-  :demand t
-  :config (load-theme 'flatui t))
 
 ;; Set the font when in graphical mode
 (set-face-attribute 'default nil :height 113 :family "Inconsolata" :foundry "PfEd")
@@ -76,8 +74,39 @@
 
 ;; Emoji
 (use-package emojify
+  :straight (emojify :type git
+                     :host github
+                     :repo "iqbalansari/emacs-emojify"
+                     :files ("data" "emojify.el"))
   :demand t
+  :init (setq emoji-emojify-styles '(unicode))
   :config (global-emojify-mode))
+
+;; ;; Mode line
+(use-package rich-minority
+  :straight (rich-minority :type git
+                           :host github
+                           :repo "Malabarba/rich-minority")
+  :demand t)
+
+(use-package smart-mode-line
+  :straight (smart-mode-line :type git
+                             :host github
+                             :repo "Malabarba/smart-mode-line")
+  :demand t
+  :config
+  (setq sml/no-confirm-load-theme t)
+  (sml/setup)
+  (sml/apply-theme 'light)
+  (display-time-mode 1))
+
+;; Use nice looking colors
+(use-package flatui-theme
+  :straight (flatui-theme :type git
+                          :host github
+                          :repo "john2x/flatui-theme.el")
+  :demand t
+  :config (load-theme 'flatui t))
 
 
 ;; ;; Hide mode line

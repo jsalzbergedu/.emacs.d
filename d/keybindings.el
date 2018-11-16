@@ -7,7 +7,17 @@
   (delete-window))
 
 (use-package evil
+  :init
+  (setq evil-want-keybinding nil)
   :demand t
+  :config
+  (add-hook 'finalize (lambda ()
+		        (evil-mode 1)
+		        (global-undo-tree-mode)))
+  :straight (evil :type git
+                  :host github
+                  :repo "emacs-evil/evil"
+                  :files ("*.el" "lib" "doc"))
   :bind (("C-c a q" . quit-window)
 	 :map evil-normal-state-map
 	 ("SPC" . nil)
@@ -26,35 +36,36 @@
 	 ("SPC q" . begone)
 	 ("SPC a" . switch-to-buffer)))
 
-;; A nice little package for dealing with strings
-(use-package s
-  :demand t)
-
 (use-package evil-collection
   :after evil
-  :config (progn (push "SPC" evil-collection-key-blacklist)
-                 (evil-collection-init)))
+  :straight (evil-collection :type git
+                             :host github
+                             :repo "emacs-evil/evil-collection")
+  :config
+  (setq evil-collection-mode-list (remove 'company evil-collection-mode-list))
+  (push "SPC" evil-collection-key-blacklist)
+  (evil-collection-init))
 
 ;; Have to unset space in many packages
 (use-package dired
   :demand t
+  :straight nil
   :bind (:map dired-mode-map
-	      ("SPC" . nil)))
-
-(use-package compile
-  :demand t
-  :bind (:map compilation-mode-map
 	      ("SPC" . nil)))
 
 (use-package help-mode
   :demand t
+  :straight nil
   :bind (:map help-mode-map
               ("SPC" . nil)))
 
 (use-package info
   :defer t
+  :straight nil
   ;; For some reason Info must be brute forced here 
-  :config (substitute-key-definition 'Info-scroll-up nil Info-mode-map)) 
+  :config
+  (substitute-key-definition 'Info-scroll-up nil Info-mode-map)
+  (evil-define-key 'normal Info-mode-map (kbd "p") 'Info-prev)) 
 
 ;; Either move across emacs windows or stumpwm windows
 (defun windmove-plain (dir)
@@ -102,40 +113,45 @@
   (windmove-or-change-focus "down"))
 
 
-(add-hook 'finalize (lambda ()
-		       (evil-mode 1)
-		       (global-undo-tree-mode)))
 
 ;; Ivy, Swiper and Council, and flx:
 (use-package swiper
+  :straight (swiper :type git
+                    :host github
+                    :repo "abo-abo/swiper")
   :bind ("C-s" . swiper))
 
 ;; Flx for ivy searching
 (use-package flx
-  :defer t)
-
-(use-package flx-ido
+  :straight (flx :type git
+                 :host github
+                 :repo "lewang/flx")
   :defer t)
 
 (use-package ivy
   :demand t
-  :config (progn (setq ivy-use-virtual-buffers t
-		       enable-recursive-minibuffers t
-		       ivy-re-builders-alist '((t . ivy--regex-fuzzy))))
-  :after flx
+  :straight nil
+  :config
+  (setq ivy-use-virtual-buffers t
+	enable-recursive-minibuffers t
+	ivy-re-builders-alist '((t . ivy--regex-fuzzy)))
+  (ivy-mode 1)
   :bind ("C-c C-r" . ivy-resume)
   :commands ivy-mode)
 
 (use-package hydra
+  :straight (hydra :type git
+                   :host github
+                   :repo "abo-abo/hydra")
   :demand t)
 
 (use-package ivy-hydra
+  :straight nil
   :demand t)
-
-(ivy-mode 1)
 
 (use-package counsel
   :demand t
+  :straight nil
   :bind (("M-x" . counsel-M-x)
 	 ("C-x C-f" . counsel-find-file)
 	 ("C-h u" . counsel-unicode-char)
@@ -148,6 +164,10 @@
 	 ("SPC f" . counsel-find-file)
 	 :map evil-motion-state-map
 	 ("SPC f" . counsel-find-file)))
+
+(use-package ace-window
+  :demand t
+  :straight t)
 
 ;;; Other keybindings
 
