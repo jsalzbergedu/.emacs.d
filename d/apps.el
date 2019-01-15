@@ -254,51 +254,51 @@ Inserted by installing org-mode or when a release is made."
 ;; Camcorder
 
 ;; Exwm
-(use-package exwm
-  :straight t
-  :defer t)
+;; (use-package exwm
+;;   :straight t
+;;   :defer t)
 
-(defun +exwm/emacs-buffer ()
-  "Check that the current buffer is an emacs buffer"
-  (or (null exwm-class-name) (string= "Emacs" exwm-class-name)))
+;; (defun +exwm/emacs-buffer ()
+;;   "Check that the current buffer is an emacs buffer"
+;;   (or (null exwm-class-name) (string= "Emacs" exwm-class-name)))
 
-(defun +exwm/goto-normal ()
-  (if (not (+exwm/emacs-buffer))
-      (evil-normal-state)))
+;; (defun +exwm/goto-normal ()
+;;   (if (not (+exwm/emacs-buffer))
+;;       (evil-normal-state)))
 
-(use-package exwm-config
-  :demand t
-  :after exwm
-  :config
-  (advice-add 'exwm-config-ido :override (lambda () t))
-  (push (cons (kbd "<escape>") #'evil-normal-state) exwm-input-global-keys)
-  :commands exwm-config-default)
+;; (use-package exwm-config
+;;   :demand t
+;;   :after exwm
+;;   :config
+;;   (advice-add 'exwm-config-ido :override (lambda () t))
+;;   (push (cons (kbd "<escape>") #'evil-normal-state) exwm-input-global-keys)
+;;   :commands exwm-config-default)
 
-(use-package exwm-systemtray
-  :demand t
-  :after exwm)
+;; (use-package exwm-systemtray
+;;   :demand t
+;;   :after exwm)
 
-(use-package exwm-firefox-core
-  :demand t
-  :after exwm
-  :straight (exwm-firefox-core :type git
-                               :host github
-                               :repo "walseb/exwm-firefox-core"))
+;; (use-package exwm-firefox-core
+;;   :demand t
+;;   :after exwm
+;;   :straight (exwm-firefox-core :type git
+;;                                :host github
+;;                                :repo "walseb/exwm-firefox-core"))
 
-(use-package exwm-firefox-evil
-  :demand t
-  :after (exwm exwm-firefox-core)
-  :straight (exwm-firefox-evil :type git
-                               :host github
-                               :repo "walseb/exwm-firefox-evil")
-  :config
-  (add-hook 'exwm-manage-finish-hook 'exwm-firefox-evil-activate-if-firefox)
-  (add-hook 'exwm-manage-finish-hook 'evil-normalize-keymaps))
+;; (use-package exwm-firefox-evil
+;;   :demand t
+;;   :after (exwm exwm-firefox-core)
+;;   :straight (exwm-firefox-evil :type git
+;;                                :host github
+;;                                :repo "walseb/exwm-firefox-evil")
+;;   :config
+;;   (add-hook 'exwm-manage-finish-hook 'exwm-firefox-evil-activate-if-firefox)
+;;   (add-hook 'exwm-manage-finish-hook 'evil-normalize-keymaps))
 
 
-(defun +exwm/start ()
-  "Start exwm"
-  (interactive)
-  (require 'exwm)
-  (exwm-config-default))
+;; (defun +exwm/start ()
+;;   "Start exwm"
+;;   (interactive)
+;;   (require 'exwm)
+;;   (exwm-config-default))
 
