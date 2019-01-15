@@ -1,11 +1,14 @@
 ;; -*- lexical-binding: t -*-
 ;;; Evil
-(defun begone ()
-  "Kills the buffer and the window"
-  (interactive)
-  (kill-this-buffer)
-  (delete-window))
+(defun +emacs/search (string)
+  (interactive "sSearch: ")
+  (start-process "Search the internet"
+                 nil
+                 "firefox"
+                 "--search"
+                 string))
 
+(+ 1 2)
 (use-package evil
   :init
   (setq evil-want-keybinding nil)
@@ -25,16 +28,18 @@
 	 ("SPC h" . windmove-cf-left)
 	 ("SPC k" . windmove-cf-up)
 	 ("SPC j" . windmove-cf-down)
-	 ("SPC q" . begone)
+	 ("SPC q" . kill-this-buffer)
 	 ("SPC a" . switch-to-buffer)
+         ("SPC SPC" . +emacs/search)
 	 :map evil-motion-state-map
 	 ("SPC" . nil)
 	 ("SPC l" . windmove-cf-right)
 	 ("SPC h" . windmove-cf-left)
 	 ("SPC k" . windmove-cf-up)
 	 ("SPC j" . windmove-cf-down)
-	 ("SPC q" . begone)
-	 ("SPC a" . switch-to-buffer)))
+	 ("SPC q" . kill-this-buffer)
+	 ("SPC a" . switch-to-buffer)
+         ("SPC SPC" . +emacs/search)))
 
 (use-package evil-collection
   :after evil
@@ -62,10 +67,10 @@
 (use-package info
   :defer t
   :straight nil
-  ;; For some reason Info must be brute forced here 
+  ;; For some reason Info must be brute forced here
   :config
   (substitute-key-definition 'Info-scroll-up nil Info-mode-map)
-  (evil-define-key 'normal Info-mode-map (kbd "p") 'Info-prev)) 
+  (evil-define-key 'normal Info-mode-map (kbd "p") 'Info-prev))
 
 ;; Either move across emacs windows or stumpwm windows
 (defun windmove-plain (dir)
