@@ -1,15 +1,5 @@
 (defvar finalize (list) "A list of functions called after emacs initializes")
-(require 'package)
-(let* ((no-ssl (and (memq system-type '(windows-nt ms-dos))
-                    (not (gnutls-available-p))))
-       (proto (if no-ssl "http" "https")))
-  ;; Comment/uncomment these two lines to enable/disable MELPA and MELPA Stable as desired
-  (add-to-list 'package-archives (cons "melpa" (concat proto "://melpa.org/packages/")) t)
-  ;;(add-to-list 'package-archives (cons "melpa-stable" (concat proto "://stable.melpa.org/packages/")) t)
-  (when (< emacs-major-version 24)
-    ;; For important compatibility libraries like cl-lib
-    (add-to-list 'package-archives '("gnu" . (concat proto "://elpa.gnu.org/packages/")))))
-(package-initialize)
+(defvar finalized nil "Whether the initialization has finalized")
 
 (defvar bootstrap-version)
 (setq straight-find-flavor 'gnu/bsd)
@@ -93,6 +83,8 @@
  ;; If there is more than one, they won't work right.
  '(ansi-color-names-vector
    ["#ecf0f1" "#e74c3c" "#2ecc71" "#f1c40f" "#2492db" "#9b59b6" "#1abc9c" "#2c3e50"])
+ '(ccls-sem-highlight-method (quote overlay) t)
+ '(cquery-sem-highlight-method (quote overlay))
  '(custom-safe-themes
    (quote
     ("c74e83f8aa4c78a121b52146eadb792c9facc5b1f02c917e3dbb454fca931223" "b9e9ba5aeedcc5ba8be99f1cc9301f6679912910ff92fdf7980929c2fc83ab4d" "84d2f9eeb3f82d619ca4bfffe5f157282f4779732f48a5ac1484d94d5ff5b279" "a27c00821ccfd5a78b01e4f35dc056706dd9ede09a8b90c6955ae6a390eb1c1e" "15348febfa2266c4def59a08ef2846f6032c0797f001d7b9148f30ace0d08bcf" default)))
@@ -103,7 +95,8 @@
  '(package-selected-packages (quote (## column-marker ps-ccrypt js3 eclimd)))
  '(safe-local-variable-values
    (quote
-    ((eval font-lock-add-keywords nil
+    ((checkdoc-package-keywords-flag)
+     (eval font-lock-add-keywords nil
            (\`
             (((\,
                (concat "("
@@ -161,6 +154,7 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(ccls-code-lens-face ((t (:inherit shadow :height 0.8))))
  '(fixed-pitch ((t (:family "Inconsolata"))))
  '(lsp-ui-sideline-code-action ((t (:foreground "#2ecc71"))))
  '(lsp-ui-sideline-current-symbol ((t (:foreground "white" :box (:line-width -1 :color "white") :weight ultra-bold :height 0.95))))
@@ -168,5 +162,7 @@
 
 (put 'upcase-region 'disabled nil)
 (with-eval-after-load 'init.el (mapc 'funcall finalize))
+(setq finalized t)
+
 (provide 'init.el)
 ;;; init.el ends here
