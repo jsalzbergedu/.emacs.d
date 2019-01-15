@@ -404,7 +404,9 @@ _e_: flycheck-list-errors
 
 (use-package lsp-ui-flycheck
   :demand t
-  :straight nil)
+  :straight nil
+  :config (add-hook 'lsp-after-open-hook
+                    (lambda () (lsp-ui-flycheck-enable 1))))
 
 ;; Nlinum to display the line
 (use-package nlinum
@@ -907,7 +909,7 @@ allows rust-project-mode-global to be activated.")
   (push "T019" flycheck-vera-rules)
   ;; My own rule:
   ;; Brackets must be in kernel c style
-  (push "LINUXKERNELBRACKETS" flycheck-vera-rules))
+  (push "LINUXKERNELBRACKETS.py" flycheck-vera-rules))
 
 (use-package ccls
   :defer t
