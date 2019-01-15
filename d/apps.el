@@ -138,7 +138,7 @@ Inserted by installing org-mode or when a release is made."
 
 ;; Tramp
 (use-package tramp
-  :straight t
+  :straight nil
   :defer t
   :config
   (setq tramp-auto-save-directory "~/.emacs.d/tramp-auto-saves")
@@ -218,3 +218,87 @@ Inserted by installing org-mode or when a release is made."
                     :host github
                     :repo "xuchunyang/gitter.el")
   :init (setq gitter-token (passwords-get 'gitter)))
+
+;; PDF tools
+(use-package pdf-tools
+  :straight t
+  :defer t
+  :init
+  (add-to-list 'auto-mode-alist '("\\.pdf\\'" . pdf-view-mode))
+  :config
+  (add-hook 'pdf-view-mode-hook (lambda ()
+                                  (local-set-key  "J" nil)))
+  (add-hook 'pdf-view-mode-hook (lambda ()
+                                  (local-set-key  "K" nil)))
+  (evil-define-key nil pdf-view-mode-map "J" #'pdf-view-shrink)
+  (evil-define-key nil pdf-view-mode-map "K" #'pdf-view-enlarge)
+  (add-hook 'pdf-view-mode-hook 'evil-normalize-keymaps)
+  :commands pdf-view-mode)
+
+;; Slack
+;; (use-package slack
+;;   :straight t
+;;   :commands (slack-start)
+;;   :init
+;;   (setq slack-buffer-emojify t)
+;;   (setq slack-prefer-current-team t)
+;;   :config
+;;   (slack-register-team
+;;    :name "urc"
+;;    :default t
+;;    :client-id ""
+;;    :client-secret ""
+;;    :subscribed-channels '(general random software)
+;;    :full-and-display-names))
+
+;; Camcorder
+
+;; Exwm
+(use-package exwm
+  :straight t
+  :defer t)
+
+(defun +exwm/emacs-buffer ()
+  "Check that the current buffer is an emacs buffer"
+  (or (null exwm-class-name) (string= "Emacs" exwm-class-name)))
+
+(defun +exwm/goto-normal ()
+  (if (not (+exwm/emacs-buffer))
+      (evil-normal-state)))
+
+(use-package exwm-config
+  :demand t
+  :after exwm
+  :config
+  (advice-add 'exwm-config-ido :override (lambda () t))
+  (push (cons (kbd "<escape>") #'evil-normal-state) exwm-input-global-keys)
+  :commands exwm-config-default)
+
+(use-package exwm-systemtray
+  :demand t
+  :after exwm)
+
+(use-package exwm-firefox-core
+  :demand t
+  :after exwm
+  :straight (exwm-firefox-core :type git
+                               :host github
+                               :repo "walseb/exwm-firefox-core"))
+
+(use-package exwm-firefox-evil
+  :demand t
+  :after (exwm exwm-firefox-core)
+  :straight (exwm-firefox-evil :type git
+                               :host github
+                               :repo "walseb/exwm-firefox-evil")
+  :config
+  (add-hook 'exwm-manage-finish-hook 'exwm-firefox-evil-activate-if-firefox)
+  (add-hook 'exwm-manage-finish-hook 'evil-normalize-keymaps))
+
+
+(defun +exwm/start ()
+  "Start exwm"
+  (interactive)
+  (require 'exwm)
+  (exwm-config-default))
+
