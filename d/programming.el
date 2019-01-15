@@ -15,6 +15,13 @@
   "Add prog-minor-modes-common to MODE-HOOKS"
   (mapc (lambda (a) (add-hook a 'prog-minor-modes-common)) mode-hooks))
 
+;; Whitespace detection
+(defun show-trailing-whitespace ()
+  (interactive)
+  (setq show-trailing-whitespace t))
+
+(push 'show-trailing-whitespace prog-minor-modes-common)
+
 ;; Ansi coloring
 (use-package ansi-color
   :demand t
@@ -27,7 +34,7 @@
   :straight nil
   :config
   (defun colorize-compilation-buffer ()
-    (toggle read-only)
+    (toggle-read-only)
     (ansi-color-apply-on-region compilation-filter-start (point))
     (toggle-read-only))
   (add-hook 'compilation-filter-hook 'colorize-compilation-buffer)
@@ -42,7 +49,7 @@
                             :host github
                             :repo "Ilazki/prettify-utils.el"
                             :fork (:host github
-                                         :repo "jsalzbergedu/prettify-utils.el"))
+                                   :repo "jsalzbergedu/prettify-utils.el"))
   :config (progn (add-hook 'prettify-symbols-mode-hook '(lambda ()
 							  "Sets the list of symbols"
 							  (setq prettify-symbols-alist
@@ -58,6 +65,11 @@
 								 ("->"     "→ "))))))
 
   :init (add-hook 'prog-minor-modes-common 'prettify-symbols-mode))
+
+;; Display side indicators in the margins
+(use-package fringe-helper
+  :demand t
+  :straight t)
 
 ;; Smartparens, for () {} '' "" []
 (use-package smartparens
@@ -89,6 +101,11 @@
                                 :repo "Fanael/rainbow-delimiters")
   :commands rainbow-delimiters-mode
   :init (add-hook 'prog-minor-modes-common 'rainbow-delimiters-mode))
+
+(use-package rainbow-mode
+  :defer t
+  :straight t
+  :init (add-hook 'prog-minor-modes-common 'rainbow-mode))
 
 ;; Yasnippet, a snippet manager
 (use-package yasnippet
@@ -236,6 +253,11 @@ _j_: company-select-next-or-abort
             (setq project-init-author-email (personal-info-get 'email)
                   project-init-author-name (personal-info-get 'name))))
 
+;; Ripgrep for fast grepping through projects
+(use-package ripgrep
+  :defer t
+  :straight t)
+
 ;; Projectile for helping emacs organize projects
 (use-package epl
   :defer t
@@ -251,6 +273,8 @@ _j_: company-select-next-or-abort
 
 (use-package projectile
   :demand t
+  :init
+  (put 'projectile-project-root 'safe-local-variable #'stringp)
   :straight (projectile :type git
                         :host github
                         :repo "bbatsov/projectile")
@@ -375,7 +399,12 @@ _e_: flycheck-list-errors
   :straight (lsp-ui :type git
                     :host github
                     :repo "emacs-lsp/lsp-ui")
-  :config (add-hook 'lsp-mode-hook 'lsp-ui-mode))
+  :config
+  (add-hook 'lsp-mode-hook 'lsp-ui-mode))
+
+(use-package lsp-ui-flycheck
+  :demand t
+  :straight nil)
 
 ;; Nlinum to display the line
 (use-package nlinum
@@ -394,8 +423,11 @@ _e_: flycheck-list-errors
 ;; All c-likes
 (use-package google-c-style
   :defer t
-  :straight t
-  :commands (google-set-c-style google-make-newline-indent))
+  :straight (google-c-style :type git
+                            :host github
+                            :repo "google/styleguide"
+                            :branch "gh-pages"
+                            :files ("*.el")))
 
 ;; Python:
 (use-package python-mode
@@ -450,7 +482,15 @@ _m_: dap-java-run-test-method"
     ("m" dap-java-debug-test-method)
     ("r c" dap-java-run-test-class)
     ("r m" dap-java-run-test-method)
-    ("h" dap-hydra)))
+    ("h" dap-hydra))
+  :config
+  (evil-define-key 'normal dap-ui-repl-mode-map (kbd "<return>")
+    #'comint-send-input)
+  (evil-define-key 'insert dap-ui-repl-mode-map (kbd "<return>")
+    (lambda ()
+      (interactive)
+      (insert "\n")))
+  (add-hook 'dap-ui-repl-mode-hook 'evil-normalize-keymaps))
 
 ;; Required nowaday for lsp-java
 (defvar material-design-icons-repo-location "~/sources/material-design-icons/")
@@ -532,7 +572,7 @@ allows java-project-mode-global to be activated.")
   :config
   (java-project-mode-global 1)
   (progn (add-hook 'java-mode-hook 'prog-minor-modes-common)
-	 (add-hook 'java-mode-hook 'lsp-java-enable)
+	 (add-hook 'java-mode-hook 'lsp)
 	 (add-hook 'java-mode-hook (lambda ()
 				                 (flycheck-mode 1)
 				                 (google-set-c-style)
@@ -555,8 +595,7 @@ allows java-project-mode-global to be activated.")
     :and ("f" xref-find-definitions)
     :and ("o" toggle-dap))
 
-  (evil-define-key 'normal java-mode-map (kbd "SPC p") 'hydra-java/body)
-  :commands lsp-java-enable)
+  (evil-define-key 'normal java-mode-map (kbd "SPC p") 'hydra-java/body))
 
 (use-package lsp-java-treemacs
   :demand t
@@ -589,9 +628,7 @@ allows java-project-mode-global to be activated.")
 		 (setq scala-indent:add-space-for-scaladoc-asterisk nil)))
 
 (use-package ensime
-  :straight (ensime-emacs :type git
-                          :host github
-                          :repo "ensime/ensime-emacs")
+  :straight t
   :defer t
   :commands ensime
   :config (setq ensime-startup-notification nil))
@@ -610,6 +647,9 @@ allows java-project-mode-global to be activated.")
   (funcall eval-region-orig start end t read-function))
 (advice-add 'eval-region :around 'eval-region-advice)
 
+(defun mark-region-with-face (face)
+  (interactive "SFace: ")
+  (put-text-property (region-beginning) (region-end) 'face face))
 ;; Common Lisp:
 (use-package slime-autoloads
   :demand t
@@ -654,6 +694,28 @@ allows java-project-mode-global to be activated.")
   :commands geiser-mode)
 
 ;; Rust:
+(define-minor-mode rust-project-mode
+  "A mode which is activated whenever the is-rust-project variable is t."
+  :lighter ""
+  :keymap (make-sparse-keymap))
+
+(add-hook 'rust-project-mode-hook 'evil-normalize-keymaps)
+
+(evil-define-key 'normal rust-project-mode-map (kbd "SPC p") 'hydra-rust/body)
+
+(defvar-local is-rust-project nil "A local variable that, when set to t,
+allows rust-project-mode-global to be activated.")
+
+(put 'is-rust-project 'safe-local-variable #'booleanp)
+
+(define-globalized-minor-mode rust-project-mode-global rust-project-mode
+  (lambda ()
+    (when (or (locate-dominating-file default-directory "Cargo.toml")
+              is-rust-project)
+        (rust-project-mode 1))))
+
+(rust-project-mode-global 1)
+
 (use-package rust-mode
   :defer t
   :straight (rust-mode :type git
@@ -661,16 +723,47 @@ allows java-project-mode-global to be activated.")
                        :repo "rust-lang/rust-mode"
                        :files ("rust-mode.el"))
   :config
-  (add-hook 'rust-mode-hook 'prog-minor-modes-common))
+  (add-hook 'rust-mode-hook 'prog-minor-modes-common)
+  (add-hook 'rust-mode-hook (lambda ()
+                              (add-to-list 'flycheck-checkers 'lsp-ui)))
+
+  (project-hydra hydra-rust
+    :test cargo-process-test
+    :compile cargo-process-build
+    :stylecheck nil
+    :search counsel-projectile-rg
+    :git hydra-magit/body
+    :run cargo-process-run
+    :and ("p" counsel-projectile-find-file)
+    :and ("e" hydra-flycheck-error/body)
+    :and ("a" lsp-ui-sideline-apply-code-actions)
+    :and ("d" xref-find-definitions-other-window)
+    :and ("f" xref-find-definitions)))
+
+(use-package flycheck-rust
+  :defer t
+  :straight (flycheck-rust :type git
+                           :host github
+                           :repo "flycheck/flycheck-rust"))
 
 (use-package lsp-rust
   :defer t
+  :after lsp-mode
   :straight (lsp-rust :type git
                       :host github
                       :repo "emacs-lsp/lsp-rust")
   :init
   (add-hook 'rust-mode-hook #'lsp-rust-enable)
-  (add-hook 'rust-mode-hook #'flycheck-mode))
+  (add-hook 'rust-mode-hook #'flycheck-mode)
+  (setq lsp-rust-rls-command '("rustup" "run" "nightly" "rls"))
+  :commands lsp-rust-enable)
+
+
+(use-package cargo
+  :defer t
+  :straight (cargo :type git
+                   :host github
+                   :repo "kwrooijen/cargo.el"))
 
 ;; Redox:
 ;; I'll get back to rdxmk later
@@ -717,21 +810,300 @@ allows java-project-mode-global to be activated.")
   :config
   (add-hook 'cmake-mode-hook 'prog-minor-modes-common))
 
+;; (defun cmake-with-compile-commands ()
+;;   (interactive)
+;;   (with-temp-buffer
+;;     (cd (expand-file-name (locate-dominating-file default-directory "build")
+;;                           "build"))
+;;     (shell-command )))
 
-(use-package lsp-clangd
-  :straight (lsp-clangd :type git
-                        :host github
-                        :repo "emacs-lsp/lsp-clangd")
-  :init (progn (add-hook 'c++-mode-hook (lambda ()
-                                          (google-set-c-style)
-                                          (google-make-newline-indent)
-                                          (setq indent-tabs-mode nil
-					        tab-width 2
-                                                c-basic-offset 2)
-                                          (prog-minor-modes-common)))
-               (setq lsp-clangd-executable "/usr/bin/clangd"
-                     cmake-style t)))
+;; (use-package lsp-clangd
+;;   :straight (lsp-clangd :type git
+;;                         :host github
+;;                         :repo "emacs-lsp/lsp-clangd")
+;;   :init (progn (add-hook 'c++-mode-hook (lambda ()
+;;                                           (google-set-c-style)
+;;                                           (google-make-newline-indent)
+;;                                           (setq indent-tabs-mode nil
+;; 					        tab-width 2
+;;                                                 c-basic-offset 2)
+;;                                           (prog-minor-modes-common)))
+;;                (setq lsp-clangd-executable "/usr/bin/clangd"
+;;                      cmake-style t)))
 
+;; (use-package cquery
+;;   :defer t
+;;   :after flycheck
+;;   :straight t
+;;   :init
+;;   (flycheck-add-mode 'c++-googlelint 'c++-mode)
+;;   (add-hook 'c++-mode-hook 'flycheck-mode)
+;;   (add-hook 'c++-mode-hook 'lsp-cquery-enable)
+;;   (add-hook 'c++-mode-hook 'cquery-code-lens-mode)
+;;   :config
+;;   (setq cquery-executable "/usr/bin/cquery")
+
+(use-package flycheck-vera
+  :demand t
+  :after flycheck
+  :straight (flycheck-vera :type git
+                           :host github
+                           :repo "jsalzbergedu/flycheck-vera")
+  :config
+  (flycheck-add-next-checker 'lsp-ui 'c/c++-vera++)
+  ;; List of rules can be found on
+  ;; https://bitbucket.org/verateam/vera/wiki/Rules
+  ;; No trailing whitespace
+  (push "L001" flycheck-vera-rules)
+  ;; No tab characters
+  (push "L002" flycheck-vera-rules)
+  ;; No leading and no trailing empty lines
+  (push "L003" flycheck-vera-rules)
+  ;; Line cannot be too long
+  (push "L004" flycheck-vera-rules)
+  ;; There should not be too many consecutive empty lines
+  (push "L005" flycheck-vera-rules)
+  ;; Source file should not be too long
+  (push "L006" flycheck-vera-rules)
+  ;; One line comments should not have forced continuation
+  (push "T001" flycheck-vera-rules)
+  ;; Reserved names should not be used for preprocessor macros
+  (push "T002" flycheck-vera-rules)
+  ;; Some keywords should be followed by a single space
+  (push "T003" flycheck-vera-rules)
+  ;; Some keywords should be immediatley followed by a colon
+  (push "T004" flycheck-vera-rules)
+  ;; Keywords break and continue should immediatley be followed by a semicolon
+  (push "T005" flycheck-vera-rules)
+  ;; Keywords return and throw should be immediatley followed by a semicolon
+  ;; or a single space
+  (push "T006" flycheck-vera-rules)
+  ;; Semicolons should not be isolated by spaces or comments from the
+  ;; rest of the code
+  (push "T007" flycheck-vera-rules)
+  ;; Keywords catch, for, if, and switch should be followed by a single space
+  (push "T008" flycheck-vera-rules)
+  ;; Commma should not be preceded by whitespace, but should be followed by one
+  (push "T009" flycheck-vera-rules)
+  ;; Identifiers should not be composed of 'l' and 'O' characters only
+  (push "T010" flycheck-vera-rules)
+  ;; Curly brakets from the same pair should be either in the same line or in
+  ;; the same column
+  ;; (push "T011" flycheck-vera-rules)
+  ;; Negation operator should not be used in its short form
+  ;; (push "T012" flycheck-vera-rules)
+  ;; Source files should contain the copyright notice
+  ;; (push "T013" flycheck-vera-rules)
+  ;; Source files should refer the Boost Software License
+  ;; (push "T014" flycheck-vera-rules)
+  ;; HTML links in commments and string literals should be correct
+  (push "T015" flycheck-vera-rules)
+  ;; Calls to min/max should be protected against accidental macro substitution
+  ;; (push "T016" flycheck-vera-rules)
+  ;; Unnamed namespaces are not allowed in header files
+  (push "T017" flycheck-vera-rules)
+  ;; "using namespace" is not allowed in header files
+  (push "T018" flycheck-vera-rules)
+  ;; Control structures must have complete curly-braced block of code
+  (push "T019" flycheck-vera-rules)
+  ;; My own rule:
+  ;; Brackets must be in kernel c style
+  (push "LINUXKERNELBRACKETS" flycheck-vera-rules))
+
+(use-package ccls
+  :defer t
+  :after flycheck
+  :init
+  (setq ccls-executable "/usr/bin/ccls")
+  (setq ccls-sem-highlight-method 'overlay)
+  :straight t
+  :config
+  ;; (setq ccls-sem-function-colors
+  ;;       '("#34495e" "#34495e" "#34495e" "#34495e" "#34495e"
+  ;;         "#34495e" "#34495e" "#34495e" "#34495e" "#34495e"))
+  (ccls-use-default-rainbow-sem-highlight)
+  (defun ccls--is-ccls-buffer-advice (f &rest args)
+    "Fix ccls--is-ccls-buffer."
+    (apply f args)
+    (locate-dominating-file default-directory ".ccls-root"))
+  (advice-add 'ccls--is-ccls-buffer :around 'ccls--is-ccls-buffer-advice)
+  :commands (lsp-ccls-enable ccls-code-lens-mode))
+;;   :commands lsp-cquery-enable)
+
+(defun +ccls/enable ()
+  (interactive)
+  (require 'ccls)
+  (lsp-ccls-enable)
+  (flycheck-mode))
+
+(defun +ccls/enable-with-lens ()
+  (+ccls/enable)
+  (ccls-code-lens-mode))
+
+;; TODO: Figure out how to have both cpplint and vera
+;; (use-package flycheck-google-cpplint
+;;   :demand t
+;;   :after (flycheck lsp-ui)
+;;   :straight (flycheck-google-cpplint :type git
+;;                                      :host github
+;;                                      :repo "flycheck/flycheck-google-cpplint"
+;;                                      :fork (:host github
+;;                                                   :repo "jsalzbergedu/flycheck-google-cpplint"))
+;;   :config
+;;   (flycheck-add-next-checker 'lsp-ui 'c/c++-googlelint))
+
+;; (use-package flycheck-clang-analyzer
+;;   :demand t
+;;   :after (flycheck lsp-ui)
+;;   :straight t
+;;   :config
+;;   (flycheck-clang-analyzer-setup))
+;; Unfortunatley I can't afford the performance hit from flycheck-clang-analyzer :(
+
+(defun +cc-mode/compile ()
+  (interactive)
+  (require 'ccls)
+  (with-temp-buffer
+    (cd (ccls--get-root))
+    (if (f-exists-p "CMakeLists.txt")
+        (progn
+          (cd "build")
+          (compile "ninja"))
+      (when (or (f-exists-p "Makefile") (f-exists-p "makefile"))
+        (compile "bear make all")))))
+
+(use-package json-pointer
+  :defer t
+  :straight (:type git
+             :host github
+             :repo "syohex/emacs-json-pointer"))
+
+(defun +cc-mode/run ()
+  (interactive)
+  (require 'ccls)
+  (require 'json-pointer)
+  (with-temp-buffer
+    (cd (ccls--get-root))
+    (call-process "rg"
+                  nil
+                  (current-buffer)
+                  nil
+                  "--glob"
+                  "*.c"
+                  "--json"
+                  "int main")
+    (let* ((s (buffer-substring-no-properties 1 (point-max)))
+           (j (json-read-from-string s))
+           (path (json-pointer-get j "data/path/text")))
+      (ansi-term
+       (concat "./" (substring path 0 (- (length path) 2)))
+       "*running program*"))))
+
+(defun +cc-mode/test ()
+  (interactive)
+  (require 'ccls)
+  (with-temp-buffer
+    (cd (ccls--get-root))
+    (if (f-exists-p "CMakeLists.txt")
+        (progn (cd "build")
+               (compile "ninja test"))
+      (when (or (f-exists-p "Makefile") (f-exists-p "makefile"))
+        (compile "make test")))))
+
+
+;; (define-minor-mode cpp-project-mode
+;;   "A mode which is activated whenever ccls-root can be found."
+;;   :lighter ""
+;;   :keymap (make-sparse-keymap))
+
+
+;; (evil-define-key 'normal cpp-project-mode-map (kbd "SPC p") 'hydra-cpp/body)
+
+;; (add-hook 'cpp-project-mode-hook 'evil-normalize-keymaps)
+
+;; (define-globalized-minor-mode cpp-project-mode-global cpp-project-mode
+;;   (lambda ()
+;;     (when (locate-dominating-file default-directory ".ccls-root")
+;;         (cpp-project-mode 1))))
+
+;; (cpp-project-mode-global 1)
+
+(project-hydra hydra-c
+  :test +cc-mode/test
+  :compile +cc-mode/compile
+  :stylecheck nil
+  :search counsel-projectile-rg
+  :git magit-status
+  :run +cc-mode/run
+  :and ("p" counsel-projectile-find-file)
+  :and ("e" hydra-flycheck-error/body)
+  :and ("a" lsp-ui-sideline-apply-code-actions)
+  :and ("d" xref-find-definitions-other-window)
+  :and ("f" xref-find-definitions))
+
+(use-package make-mode
+  :straight nil
+  :defer t
+  :init
+  (add-hook 'makefile-mode-hook 'prog-minor-modes-common))
+
+;; This is a vile hack
+(make-variable-buffer-local 'rainbow-hexadecimal-colors-font-lock-keywords)
+
+(defvar cc-mode-rainbow-hexadecimal-colors-font-lock-keywords
+  '(("[Rr][Gg][Bb]:[0-9a-fA-F]\\{1,4\\}/[0-9a-fA-F]\\{1,4\\}/[0-9a-fA-F]\\{1,4\\}"
+     (0 (rainbow-colorize-itself)))
+    ("[Rr][Gg][Bb][Ii]:[0-9.]+/[0-9.]+/[0-9.]+"
+     (0 (rainbow-colorize-itself)))
+    ("\\(?:[Cc][Ii][Ee]\\(?:[Xx][Yy][Zz]\\|[Uu][Vv][Yy]\\|[Xx][Yy][Yy]\\|[Ll][Aa][Bb]\\|[Ll][Uu][Vv]\\)\\|[Tt][Ee][Kk][Hh][Vv][Cc]\\):[+-]?[0-9.]+\\(?:[Ee][+-]?[0-9]+\\)?/[+-]?[0-9.]+\\(?:[Ee][+-]?[0-9]+\\)?/[+-]?[0-9.]+\\(?:[Ee][+-]?[0-9]+\\)?"
+     (0 (rainbow-colorize-itself))))
+  "Hexidecimal colors for c/++ buffers")
+
+(use-package cc-mode
+  :defer t
+  :after flycheck
+  :straight nil
+  :init
+  ;; makefiles
+  ;; c++ stuff
+  (add-hook 'c++-mode-hook (lambda ()
+                             (google-set-c-style)
+                             (google-make-newline-indent)
+                             (setq indent-tabs-mode nil
+ 				   tab-width 2
+                                   c-basic-offset 2
+                                   rainbow-hexadecimal-colors-font-lock-keywords
+                                   cc-mode-rainbow-hexadecimal-colors-font-lock-keywords)
+                             (prog-minor-modes-common)))
+  (add-hook 'c++-mode-hook #'+ccls/enable-with-lens)
+  (add-to-list 'auto-mode-alist '("conanfile\\.txt\\'" . conf-mode))
+  (project-hydra hydra-cpp
+    :test +cc-mode/test
+    :compile +cc-mode/compile
+    :stylecheck nil
+    :search counsel-projectile-rg
+    :git hydra-magit/body
+    :run nil
+    :and ("p" counsel-projectile-find-file)
+    :and ("e" hydra-flycheck-error/body)
+    :and ("a" lsp-ui-sideline-apply-code-actions)
+    :and ("d" xref-find-definitions-other-window)
+    :and ("f" xref-find-definitions))
+  (evil-define-key 'normal c++-mode-map (kbd "SPC p") 'hydra-cpp/body)
+  (add-hook 'c++-mode-hook #'evil-normalize-keymaps)
+  ;; c stuff
+  (add-hook 'c-mode-hook (lambda ()
+                           (google-set-c-style)
+                           (google-make-newline-indent)
+                           (setq indent-tabs-mode nil
+                                 tab-width 2
+                                 c-basic-offset 2
+                                 rainbow-hexadecimal-colors-font-lock-keywords
+                                 cc-mode-rainbow-hexadecimal-colors-font-lock-keywords)
+                           (setq show-trailing-whitespace t)
+                           (prog-minor-modes-common)))
+  (add-hook 'c-mode-hook #'+ccls/enable-with-lens)
+  (evil-define-key 'normal c-mode-map (kbd "SPC p") #'hydra-c/body))
 
 
 ;; Json
@@ -747,7 +1119,9 @@ allows java-project-mode-global to be activated.")
   :straight (forth-mode :type git
                         :host github
                         :repo "larsbrinkhoff/forth-mode")
-  :config (add-hook 'forth-mode-hook 'prog-minor-modes-common)
+  :config
+  (add-hook 'forth-mode-hook 'prog-minor-modes-common)
+  (setq forth-executable "/usr/bin/gforth")
   :defer t)
 
 (use-package forth-block-mode
@@ -829,3 +1203,11 @@ allows java-project-mode-global to be activated.")
                         :host github
                         :repo "FStarLang/fstar-mode.el")
   :defer t)
+
+;; Unix config files
+(use-package conf-mode
+  :defer t
+  :straight nil
+  :init
+  (add-hook 'conf-unix-mode-hook 'prog-minor-modes-common)
+  (add-hook 'conf-javaprop-mode-hook 'prog-minor-modes-common))
