@@ -3,6 +3,7 @@
 
 ;; Clean up all the unnecessary visual elements
 (set-fringe-mode (setq fringe-mode 0))
+(setq fringes-outside-margins t) ; for when they're necessary
 (set-scroll-bar-mode (setq scroll-bar-mode nil))
 (tool-bar-mode -1)
 (menu-bar-mode -1)
@@ -107,7 +108,6 @@
                           :repo "john2x/flatui-theme.el")
   :demand t
   :config (load-theme 'flatui t))
-
 
 ;; ;; Hide mode line
 ;; (defvar mode-line-storage nil)
