@@ -753,10 +753,9 @@ allows rust-project-mode-global to be activated.")
                       :host github
                       :repo "emacs-lsp/lsp-rust")
   :init
-  (add-hook 'rust-mode-hook #'lsp-rust-enable)
+  (add-hook 'rust-mode-hook #'lsp)
   (add-hook 'rust-mode-hook #'flycheck-mode)
-  (setq lsp-rust-rls-command '("rustup" "run" "nightly" "rls"))
-  :commands lsp-rust-enable)
+  (setq lsp-rust-rls-command '("rustup" "run" "nightly" "rls")))
 
 
 (use-package cargo
@@ -933,7 +932,7 @@ allows rust-project-mode-global to be activated.")
 (defun +ccls/enable ()
   (interactive)
   (require 'ccls)
-  (lsp-ccls-enable)
+  (lsp)
   (flycheck-mode))
 
 (defun +ccls/enable-with-lens ()
