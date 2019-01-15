@@ -175,7 +175,7 @@ Inserted by installing org-mode or when a release is made."
   :init
   (setq erc-autojoin-channels-alist (list (cons "freenode.net" (list "#stratis-storage" "#scheme")) (cons "mozilla.org" (list "#rust" "#rust-beginners" "#servo"))))
   (setq erc-prompt (concat "<jcob>:"))
-  (defun my-erc-connect () 
+  (defun my-erc-connect ()
     "Connect to the IRC servers I usually connect to"
     (interactive)
     (erc :server "irc.freenode.net"
@@ -207,7 +207,7 @@ Inserted by installing org-mode or when a release is made."
 (use-package ansi-term
   :straight nil
   :defer t
-  :config (add-hook 'term-mode-hook (lambda () 
+  :config (add-hook 'term-mode-hook (lambda ()
 				      (evil-local-set-key 'normal (kbd "p") 'term-paste))))
 
 
