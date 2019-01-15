@@ -1,5 +1,5 @@
-**~
-**#*#
+*~
+*#*#
 *
 !init.el
 !d
@@ -8,8 +8,8 @@
 !Inconsolata-LGC/*
 !indent-tools
 !indent-tools/*
-**~
-**#*#
+*~
+*#*#
 !.emacs
 !.gitignore
 !README.md
@@ -19,6 +19,6 @@
 !/prettify-utils.el/*
 !offlineimaprcsrc
 !erc-sasl
-**~
-**#*#
-**.elc
+*~
+*#*#
+*.elc
