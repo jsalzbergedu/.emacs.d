@@ -47,7 +47,7 @@
   :straight nil
   :demand t)
 
-(use-package monitor 
+(use-package monitor
   :straight (monitor :type git
                      :host github
                      :repo "GuiltyDolphin/monitor")
