@@ -984,7 +984,8 @@ allows rust-project-mode-global to be activated.")
   (require 'ccls)
   (require 'json-pointer)
   (with-temp-buffer
-    (cd (projectile-project-root))
+    (cd (or (locate-dominating-file ".ccls-root")
+            (projectile-project-root)))
     (call-process "rg"
                   nil
                   (current-buffer)
@@ -1004,7 +1005,8 @@ allows rust-project-mode-global to be activated.")
   (interactive)
   (require 'ccls)
   (with-temp-buffer
-    (cd (projectile-project-root))
+    (cd (or (locate-dominating-file ".ccls-root")
+            (projectile-project-root)))
     (if (f-exists-p "CMakeLists.txt")
         (progn (cd "build")
                (compile "ninja test"))
