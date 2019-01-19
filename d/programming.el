@@ -435,8 +435,13 @@ _e_: flycheck-list-errors
 (use-package python-mode
   :defer t
   :straight nil
-  :hook (python-mode . eglot-ensure)
-  :init (add-hook 'python-mode-hook 'prog-minor-modes-common))
+  :init
+  (add-hook 'python-mode-hook 'prog-minor-modes-common)
+  (add-hook 'python-mode-hook 'lsp))
+
+(use-package lsp-python
+  :defer t
+  :straight t)
 
 ; Javascript:
 
@@ -805,6 +810,13 @@ allows rust-project-mode-global to be activated.")
 ;; TODO
 
 ;; C/C++
+(use-package realgud
+  :straight t
+  :defer t
+  :commands realgud:gdb
+  :config
+  (setq realgud-bp-use-fringe nil))
+
 (use-package cmake-mode
   :defer t
   :straight t
@@ -1214,3 +1226,28 @@ allows rust-project-mode-global to be activated.")
   :init
   (add-hook 'conf-unix-mode-hook 'prog-minor-modes-common)
   (add-hook 'conf-javaprop-mode-hook 'prog-minor-modes-common))
+
+;; CSV files
+(use-package csv-mode
+  :defer t
+  :straight t
+  :init
+  (add-hook 'csv-mode-hook 'prog-minor-modes-common))
+
+;; Lua mode
+(use-package lua-mode
+  :defer t
+  :straight t
+  :hook ((lua-mode . prog-minor-modes-common)))
+
+;; Rosie Pattern language
+(use-package rpl-mode
+  ;; rpl doesnt play nice with lazy loading
+  :demand t
+  :straight (rpl-mode :type git
+                      :host gitlab
+                      :repo "rosie-pattern-language/rosie"
+                      :files ("extra/emacs/rpl-mode.el"))
+  :hook ((rpl-mode . prog-minor-modes-common))
+  :config
+  (setq *rpl-mode-verbose* nil))

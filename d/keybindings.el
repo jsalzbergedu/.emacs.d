@@ -8,7 +8,6 @@
                  "--search"
                  string))
 
-(+ 1 2)
 (use-package evil
   :init
   (setq evil-want-keybinding nil)
