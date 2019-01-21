@@ -153,6 +153,10 @@
   :straight nil
   :demand t)
 
+(use-package amx
+  :straight t
+  :defer t)
+
 (use-package counsel
   :demand t
   :straight nil

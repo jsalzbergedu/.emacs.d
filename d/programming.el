@@ -27,6 +27,13 @@
   :demand t
   :straight nil)
 
+;; Cookiecutter to quickly start projects
+(use-package cookiecutter
+  :straight (cookiecutter :type git
+                          :host github
+                          :repo "jsalzbergedu/cookiecutter-emacs-ui")
+  :defer t)
+
 ;; Compile for... compilation
 (use-package compile
   :after ansi-color
@@ -375,8 +382,8 @@ _b_ magit-branch _c_ magit-checkout
     (condition-case nil
         (flycheck-next-error)
       (error (flycheck-next-error 1 t))))
-  
-  
+
+
   (defun flycheck-scroll-err-prev ()
     "Go to the next error, reversing if necessary"
     (interactive)
@@ -815,7 +822,9 @@ allows rust-project-mode-global to be activated.")
   :defer t
   :commands realgud:gdb
   :config
-  (setq realgud-bp-use-fringe nil))
+  ;; I would really like to be able to set this to nil,
+  ;; but doing so crashes emacs
+  (setq realgud-bp-use-fringe t))
 
 (use-package cmake-mode
   :defer t
