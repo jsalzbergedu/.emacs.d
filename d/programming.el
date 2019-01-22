@@ -1000,27 +1000,96 @@ allows rust-project-mode-global to be activated.")
              :host github
              :repo "syohex/emacs-json-pointer"))
 
+;; Candidates for running come from:
+;; 1. Find all the files with int main
+;; 2. Find those files in the compile commands
+;; 3. Find what comes after -o
+(defun +cc-mode/compute-executable (compile-command)
+  (let* ((directory (cdr (assoc 'directory compile-command)))
+         (arguments (cdr (assoc 'arguments compile-command)))
+         (o-flag nil))
+    (cl-loop for i from 0 below (length arguments)
+             do (when (string= (aref arguments i) "-o")
+                  (setq o-flag i)))
+    (expand-file-name (aref arguments (+ 1 o-flag)) directory)))
+
+
+(defun +cc-mode/choose ()
+  (interactive)
+  (require 'f)
+  (require 'cl-lib)
+  (let ((file (f-filename buffer-file-name))
+        (root (or (locate-dominating-file default-directory ".ccls-root")
+                  (projectile-project-root))))
+    (with-temp-buffer
+      (cd root)
+      (let* ((s (f-read "compile_commands.json"))
+             (j (json-read-from-string s))
+             (j (cl-loop for i from 0 below (length j)
+                         collect (aref j i)))
+             (j (cl-remove-if-not
+                 (lambda (x) (string= (cdr (assoc 'file x)) file))
+                 j))
+             (executables (cl-loop for item in j
+                                   collect
+                                   (+cc-mode/compute-executable item)))
+             (executable (completing-read "executable to run: "
+                                          executables))
+             (save (y-or-n-p "save this as the executable for this file? ")))
+        (when save
+          (let ((to-add `((:file ,file :executable ,executable))))
+            (if (not (f-file-p ".cc-extras"))
+                (f-write
+                 (format "%s" to-add)
+                 'utf-8
+                 ".cc-extras")
+              (let* ((plist (f-read ".cc-extras"))
+                     (plist (read plist)))
+                (f-write
+                 (format "%s" (cons to-add plist))
+                 'utf-8
+                 ".cc-extras")))))
+        executable))))
+
 (defun +cc-mode/run ()
   (interactive)
-  (require 'ccls)
-  (require 'json-pointer)
-  (with-temp-buffer
-    (cd (or (locate-dominating-file ".ccls-root")
-            (projectile-project-root)))
-    (call-process "rg"
-                  nil
-                  (current-buffer)
-                  nil
-                  "--glob"
-                  "*.c"
-                  "--json"
-                  "int main")
-    (let* ((s (buffer-substring-no-properties 1 (point-max)))
-           (j (json-read-from-string s))
-           (path (json-pointer-get j "data/path/text")))
-      (ansi-term
-       (concat "./" (substring path 0 (- (length path) 2)))
-       "*running program*"))))
+  (require 'f)
+  (let* ((file buffer-file-name)
+         (conf (expand-file-name ".cc-extras"
+                                 (locate-dominating-file default-directory ".cc-extras")))
+         (conf (and (f-file-p conf) conf))
+         (conf (when conf (read (f-read conf 'utf-8))))
+         (conf (when conf (cl-remove-if (lambda (x)
+                                          (string= (plist-get x :file) file))
+                                        conf)))
+         (conf (when conf (car conf)))
+         (executable (when conf
+                       (plist-get conf :executable)))
+         (executable (when executable
+                       (format "%s" executable))))
+    (when (not executable)
+      (setq executable (+cc-mode/choose)))
+    (message "Type of executable: %s" (type-of executable))
+    (compile (compilation-read-command executable) t)))
+
+  ;; (with-temp-buffer
+  ;;   (locate-dominating-file default-directory ".cc-extras")
+  ;;   (f-read )))
+    ;; (call-process "rg"
+    ;;               nil
+    ;;               (current-buffer)
+    ;;               nil
+    ;;               "--glob"
+    ;;               "*.c"
+    ;;               "--json"
+    ;;               "int main")
+;;    (let* ((s (buffer-substring-no-properties 1 (point-max)))
+;;           (j (json-read-from-string s))
+
+;;           (path (json-pointer-get j "data/path/text")))
+;;      (ansi-term
+;;       (concat "./" (substring path 0 (- (length path) 2)))
+;;       "*running program*"))))
 
 (defun +cc-mode/test ()
   (interactive)
